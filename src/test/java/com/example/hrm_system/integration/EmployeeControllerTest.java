@@ -4,6 +4,7 @@ import com.example.hrm_system.dto.EmployeeResponse;
 import com.example.hrm_system.entity.Employee;
 import com.example.hrm_system.enums.Gender;
 import com.example.hrm_system.repository.EmployeeRepository;
+import com.github.springtestdbunit.annotation.DatabaseSetup;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
@@ -37,6 +39,8 @@ public class EmployeeControllerTest {
     private EmployeeRepository employeeRepository;
 
     @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employee-info.xml")
     void testGetEmployeeInfo_shouldReturnOkWhenFindEmployeeById() throws Exception {
         MvcResult result = mockMvc.perform(get("/api/employees/1"))
                 .andExpect(status().isOk())

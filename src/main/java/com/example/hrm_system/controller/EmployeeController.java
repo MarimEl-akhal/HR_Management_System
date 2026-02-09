@@ -1,5 +1,6 @@
 package com.example.hrm_system.controller;
 
+import com.example.hrm_system.dto.EmployeeResponse;
 import com.example.hrm_system.entity.Employee;
 import com.example.hrm_system.service.EmployeeService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +19,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/{id}")
-    public Employee findEmployeeById(@PathVariable Long id) {
+    public EmployeeResponse findEmployeeById(@PathVariable Long id) {
         return employeeService.findById(id);
     }
 
