@@ -31,8 +31,7 @@ import java.util.stream.Collectors;
 
 import static com.example.hrm_system.enums.ApiError.*;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -293,4 +292,17 @@ public class EmployeeControllerTest {
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
     }
+
+
+    @Test
+    @DatabaseSetup("/dataset/remove-employee.xml")
+    @Transactional
+    void testDeleteEmployeeWithoutSubordinates_shouldDeleteSuccessfully() throws Exception {
+        // 1 Marim -> 2 Ahmed -> 3 Asmaa , 4 Nada
+        // we try delete Asmaa (id = 3)
+        mockMvc.perform(delete("/api/employees/3")).andExpect(status().isNoContent()).andReturn();
+
+        assertTrue(employeeRepository.findById(3L).isEmpty());
+    }
+
 }
