@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.example.hrm_system.enums.ApiError.EMPLOYEE_NOT_FOUND;
+import static com.example.hrm_system.enums.ApiError.INVALID_EMPLOYEE_DELETION;
 
 @Service
 public class EmployeeService {
@@ -101,6 +102,7 @@ public class EmployeeService {
 
         Employee manager = employee.getManager();
         if (manager == null && !employee.getSubordinates().isEmpty()) {
+            throw new ApiException(INVALID_EMPLOYEE_DELETION);
         }
         for (Employee subordinate : employee.getSubordinates()) {
             subordinate.setManager(manager);
