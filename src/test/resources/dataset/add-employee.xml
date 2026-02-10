@@ -1,0 +1,33 @@
+<dataset>
+
+    <!-- Departments -->
+    <departments department_id="1" name="Human Resources"/>
+    <departments department_id="2" name="Engineering"/>
+
+    <!-- Teams -->
+    <teams team_id="1" name="Team 1"/>
+    <teams team_id="2" name="Team 2"/>
+
+    <!-- Employees -->
+    <employees
+               employee_id="1"
+               name="Marim Mohamed"
+               birth_date="1975-01-01"
+               graduation_date="2000-01-01"
+               gender="FEMALE"
+               gross_salary="60000.0"
+               department_id="1"
+               team_id="1"
+    />
+
+    <!-- Expertises -->
+    <expertises expertise_id="1" name="Java"/>
+    <expertises expertise_id="2" name="SpringBoot"/>
+
+
+    <!-- Employee Expertise -->
+    <employee_expertise employee_id="1" expertise_id="1"/>
+
+
+
+</dataset>
