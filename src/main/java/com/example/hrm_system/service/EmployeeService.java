@@ -93,4 +93,10 @@ public class EmployeeService {
                 .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND, "Employee not found with id: " + id));
         return EmployeeMapper.toResponse(employee);
     }
+
+    public void deleteEmployee(Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow();
+        employeeRepository.delete(employee);
+    }
 }
