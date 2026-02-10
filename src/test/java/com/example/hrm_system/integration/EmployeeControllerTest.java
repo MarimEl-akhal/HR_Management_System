@@ -94,7 +94,41 @@ public class EmployeeControllerTest {
         assertEquals(employeeRequest.getDepartmentId(), employee.getDepartment().getId());
         assertEquals(employeeRequest.getTeamId(), employee.getTeam().getId());
         assertEquals(employeeRequest.getExpertises(), employee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()));
+    }
 
+    @Test
+    @DatabaseSetup("/dataset/add-employee.xml")
+    @Transactional
+    void testAddEmployeeWithoutExpertises_shouldCreateEmployeeSuccessfully() throws Exception {
+        EmployeeRequest employeeRequest = EmployeeRequest.builder()
+                .name("Mohamed Abdelrahman")
+                .birthDate(LocalDate.of(1980, 8, 5))
+                .graduationDate(LocalDate.of(2014, 5, 10))
+                .gender(Gender.MALE)
+                .grossSalary(70000.0)
+                .managerId(1L)
+                .departmentId(2L)
+                .teamId(2L)
+                .build();
+
+        MvcResult result = mockMvc.perform(post("/api/employees")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                .andExpect(status().isCreated())
+                .andReturn();
+
+        EmployeeResponse employeeResponse = objectMapper.readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
+
+        Employee employee = employeeRepository.findById(employeeResponse.getId()).get();
+        assertNotNull(employee);
+        assertNotNull(employee.getId());
+        assertEquals(employeeRequest.getName(), employee.getName());
+        assertEquals(employeeRequest.getBirthDate(), employee.getBirthDate());
+        assertEquals(employeeRequest.getGender(), employee.getGender());
+        assertEquals(employeeRequest.getGrossSalary(), employee.getGrossSalary());
+        assertEquals(employeeRequest.getManagerId(), employee.getManager().getId());
+        assertEquals(employeeRequest.getDepartmentId(), employee.getDepartment().getId());
+        assertEquals(employeeRequest.getTeamId(), employee.getTeam().getId());
     }
 
     @Test
