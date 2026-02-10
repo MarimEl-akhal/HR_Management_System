@@ -304,5 +304,22 @@ public class EmployeeControllerTest {
 
         assertTrue(employeeRepository.findById(3L).isEmpty());
     }
+    @Test
+    @DatabaseSetup("/dataset/remove-employee.xml")
+    @Transactional
+    void testDeleteEmployeeHasManagerAndSubordinates_shouldDeleteSuccessfully() throws Exception {
+        // 1 Marim -> 2 Ahmed -> 3 Asmaa , 4 Nada
+        // we try delete Ahmed (id = 2)
+        mockMvc.perform(delete("/api/employees/2")).andExpect(status().isNoContent()).andReturn();
+
+        assertTrue(employeeRepository.findById(2L).isEmpty());
+
+        Employee manager = employeeRepository.findById(1L).get();
+        Employee subordinate1 = employeeRepository.findById(3L).get();
+        Employee subordinate2 = employeeRepository.findById(4L).get();
+        assertEquals(manager.getId(), subordinate1.getManager().getId());
+        assertEquals(manager.getId(), subordinate2.getManager().getId());
+    }
+
 
 }
