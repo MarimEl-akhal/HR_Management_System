@@ -96,7 +96,8 @@ public class EmployeeService {
 
     public void deleteEmployee(Long id) {
         Employee employee = employeeRepository.findById(id)
-                .orElseThrow();
+                .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND,
+                        "Employee not found with id: " + id));
 
         Employee manager = employee.getManager();
         if (manager == null && !employee.getSubordinates().isEmpty()) {
