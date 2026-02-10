@@ -195,6 +195,71 @@ public class EmployeeControllerTest {
 
     }
 
+    @Test
+    @DatabaseSetup("/dataset/add-employee.xml")
+    @Transactional
+    void testAddEmployee_shouldFailWhenDepartmentNotFound() throws Exception {
+        EmployeeRequest employeeRequest = EmployeeRequest.builder()
+                .name("Malak Ahmed")
+                .birthDate(LocalDate.of(1977, 5, 5))
+                .graduationDate(LocalDate.of(2000, 6, 27))
+                .gender(Gender.FEMALE)
+                .grossSalary(99000.0)
+                .departmentId(99L)
+                .build();
+
+        mockMvc.perform(post("/api/employees")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains(DEPARTMENT_NOT_FOUND.getDefaultMessage() + employeeRequest.getDepartmentId())));
+    }
+
+
+    @Test
+    @DatabaseSetup("/dataset/add-employee.xml")
+    @Transactional
+    void testAddEmployee_shouldFailWhenNotFoundTeam() throws Exception {
+        EmployeeRequest employeeRequest = EmployeeRequest.builder()
+                .name("Malak Ahmed")
+                .birthDate(LocalDate.of(1977, 5, 5))
+                .graduationDate(LocalDate.of(2000, 6, 27))
+                .gender(Gender.FEMALE)
+                .grossSalary(99000.0)
+                .departmentId(2L)
+                .managerId(1L)
+                .teamId(99L)
+                .build();
+
+        mockMvc.perform(post("/api/employees")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains(TEAM_NOT_FOUND.getDefaultMessage() + employeeRequest.getTeamId())));
+    }
+
+    @Test
+    @DatabaseSetup("/dataset/add-employee.xml")
+    @Transactional
+    void testAddEmployeeWithExpertises_shouldFailWhenNotFoundExpertises() throws Exception {
+        EmployeeRequest employeeRequest = EmployeeRequest.builder()
+                .name("Mohamed Abdelrahman")
+                .birthDate(LocalDate.of(1980, 8, 5))
+                .graduationDate(LocalDate.of(2014, 5, 10))
+                .gender(Gender.MALE)
+                .grossSalary(70000.0)
+                .departmentId(2L)
+                .teamId(2L)
+                .managerId(1L)
+                .build();
+        employeeRequest.setExpertises(Set.of("Java", "React"));
+        mockMvc.perform(post("/api/employees")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains(EXPERTISE_NOT_FOUND.getDefaultMessage())));
+
+    }
 
 
     @Test

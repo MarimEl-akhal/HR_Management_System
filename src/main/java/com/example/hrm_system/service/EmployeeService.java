@@ -43,7 +43,10 @@ public class EmployeeService {
 
         if (employeeRequestDto.getManagerId() != null) {
             Employee manager = employeeRepository.findById(employeeRequestDto.getManagerId())
-                    .orElseThrow();
+                    .orElseThrow(() -> new ApiException(
+                            ApiError.MANAGER_NOT_FOUND,
+                            "Manager not found with id: " + employeeRequestDto.getManagerId()
+                    ));
             employee.setManager(manager);
         }
 
