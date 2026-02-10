@@ -320,6 +320,15 @@ public class EmployeeControllerTest {
         assertEquals(manager.getId(), subordinate1.getManager().getId());
         assertEquals(manager.getId(), subordinate2.getManager().getId());
     }
+    @Test
+    @DatabaseSetup("/dataset/remove-employee.xml")
+    @Transactional
+    void testDeleteNotFoundEmployee_shouldReturnNotFound() throws Exception {
+        mockMvc.perform(delete("/api/employees/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
+    }
+
 
 
 }
