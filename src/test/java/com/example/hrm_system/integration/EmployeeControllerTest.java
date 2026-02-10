@@ -29,8 +29,7 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.example.hrm_system.enums.ApiError.EMPLOYEE_NOT_FOUND;
-import static com.example.hrm_system.enums.ApiError.INVALID_GROSS_SALARY;
+import static com.example.hrm_system.enums.ApiError.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -154,8 +153,28 @@ public class EmployeeControllerTest {
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains(INVALID_GROSS_SALARY.getDefaultMessage()))).andReturn();
     }
 
+    @Test
+    @DatabaseSetup("/dataset/add-employee.xml")
+    @Transactional
+    void testAddEmployee_shouldFailWhenFutureBirthDate() throws Exception {
+        EmployeeRequest employeeRequest = EmployeeRequest.builder()
+                .name("Malak Ahmed")
+                .birthDate(LocalDate.of(2029, 5, 5))
+                .graduationDate(LocalDate.of(2000, 6, 27))
+                .gender(Gender.FEMALE)
+                .grossSalary(99000.0)
+                .build();
 
-        @Test
+        mockMvc.perform(post("/api/employees")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains(INVALID_DATES.getDefaultMessage())));
+
+    }
+
+
+    @Test
     @DatabaseSetup("/dataset/get-employee-info.xml")
     @Transactional
     void testGetEmployeeInfo_shouldReturnOkWhenFindEmployeeById() throws Exception {
@@ -184,6 +203,6 @@ public class EmployeeControllerTest {
         mockMvc.perform(get("/api/employees/99"))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                                                    .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
+                        .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
     }
 }
