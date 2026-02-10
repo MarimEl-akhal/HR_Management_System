@@ -1,13 +1,13 @@
 package com.example.hrm_system.controller;
 
+import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
 import com.example.hrm_system.entity.Employee;
 import com.example.hrm_system.service.EmployeeService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/employees")
@@ -17,6 +17,12 @@ public class EmployeeController {
 
     public EmployeeController(EmployeeService employeeService) {
         this.employeeService = employeeService;
+    }
+
+    @PostMapping
+    public ResponseEntity<EmployeeResponse> addEmployee(@Valid @RequestBody EmployeeRequest employeeRequestDto) {
+        EmployeeResponse responseDto = employeeService.addEmployee(employeeRequestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
     }
 
     @GetMapping("/{id}")
