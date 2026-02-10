@@ -97,6 +97,13 @@ public class EmployeeService {
     public void deleteEmployee(Long id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow();
+
+        Employee manager = employee.getManager();
+        if (manager == null && !employee.getSubordinates().isEmpty()) {
+        }
+        for (Employee subordinate : employee.getSubordinates()) {
+            subordinate.setManager(manager);
+        }
         employeeRepository.delete(employee);
     }
 }
