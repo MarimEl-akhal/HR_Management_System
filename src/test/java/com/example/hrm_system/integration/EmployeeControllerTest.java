@@ -175,6 +175,29 @@ public class EmployeeControllerTest {
 
 
     @Test
+    @DatabaseSetup("/dataset/add-employee.xml")
+    @Transactional
+    void testAddEmployee_shouldFailWhenManagerNotFound() throws Exception {
+        EmployeeRequest employeeRequest = EmployeeRequest.builder()
+                .name("Malak Ahmed")
+                .birthDate(LocalDate.of(1977, 5, 5))
+                .graduationDate(LocalDate.of(2000, 6, 27))
+                .gender(Gender.FEMALE)
+                .grossSalary(99000.0)
+                .managerId(999L)
+                .build();
+
+        mockMvc.perform(post("/api/employees")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains(MANAGER_NOT_FOUND.getDefaultMessage() + employeeRequest.getManagerId())));
+
+    }
+
+
+
+    @Test
     @DatabaseSetup("/dataset/get-employee-info.xml")
     @Transactional
     void testGetEmployeeInfo_shouldReturnOkWhenFindEmployeeById() throws Exception {
