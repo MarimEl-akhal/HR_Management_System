@@ -329,6 +329,17 @@ public class EmployeeControllerTest {
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
     }
 
+    //delete root manager (marim -> has no manger but has subordinates) -> conflict
+    @Test
+    @DatabaseSetup("/dataset/remove-employee.xml")
+    @Transactional
+    void testDeleteRootManager_shouldReturnConflict() throws Exception {
+        // 1 Marim -> 2 Ahmed -> 3 Asmaa , 4 Nada
+        // we try delete Ahmed (id = 2)
+        mockMvc.perform(delete("/api/employees/1"))
+                .andExpect(status().isConflict())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains(INVALID_EMPLOYEE_DELETION.getDefaultMessage())));
+    }
 
 
 }
