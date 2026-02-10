@@ -84,10 +84,6 @@ public class EmployeeService {
             employee.setExpertises(expertises);
         }
 
-
-//        Employee savedEmployee = employee; // employeeRepository.save(employee);
-//        employee.setId(12L);
-//        return EmployeeMapper.toResponse(savedEmployee);
         return EmployeeMapper.toResponse(employeeRepository.save(employee));
     }
 
