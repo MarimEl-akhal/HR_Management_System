@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dataset>
+    <!-- Departments -->
+    <departments department_id="1" name="Information Technology "/>
+    <departments department_id="2" name="Engineering"/>
+
+    <!-- Teams -->
+    <teams team_id="1" name="Dev"/>
+    <teams team_id="2" name="alpha"/>
+
+    <!-- employees -->
+    <employees employee_id="1"
+               name="Zaid"
+               birth_date="1975-01-01"
+               graduation_date="2000-01-01"
+               gender="MALE"
+               gross_salary="100000.0"
+               department_id="2"
+               team_id="1"
+    />
+    <employees employee_id="2"
+               name="Salim"
+               birth_date="1995-05-01"
+               graduation_date="2017-06-01"
+               gender="MALE"
+               gross_salary="90000.0"
+               manager_id="1"
+               department_id="2"
+               team_id="1"
+    />
+    <employees employee_id="3"
+               name="Laila"
+               birth_date="1999-08-12"
+               graduation_date="2021-06-10"
+               gender="FEMALE"
+               gross_salary="60000.0"
+               manager_id="2"
+               department_id="1"
+               team_id="2"
+    />
+
+    <!-- Expertises -->
+    <expertises expertise_id="1" name="Java"/>
+    <expertises expertise_id="2" name="SpringBoot"/>
+
+    <!-- Employee Expertise -->
+    <employee_expertise employee_id="1" expertise_id="1"/>
+    <employee_expertise employee_id="1" expertise_id="2"/>
+    <employee_expertise employee_id="2" expertise_id="1"/>
+    <employee_expertise employee_id="3" expertise_id="2"/>
+
+</dataset>

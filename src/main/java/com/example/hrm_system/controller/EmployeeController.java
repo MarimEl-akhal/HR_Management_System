@@ -2,7 +2,6 @@ package com.example.hrm_system.controller;
 
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
-import com.example.hrm_system.entity.Employee;
 import com.example.hrm_system.service.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;

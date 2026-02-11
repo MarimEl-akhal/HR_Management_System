@@ -99,6 +99,7 @@ public class EmployeeControllerTest {
     @DatabaseSetup("/dataset/add-employee.xml")
     @Transactional
     void testAddEmployeeWithoutExpertises_shouldCreateEmployeeSuccessfully() throws Exception {
+        long countBefore = employeeRepository.count();
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
                 .name("Mohamed Abdelrahman")
                 .birthDate(LocalDate.of(1980, 8, 5))
@@ -115,8 +116,11 @@ public class EmployeeControllerTest {
                         .content(objectMapper.writeValueAsString(employeeRequest)))
                 .andExpect(status().isCreated())
                 .andReturn();
+        long countAfter = employeeRepository.count();
 
         EmployeeResponse employeeResponse = objectMapper.readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
+
+        assertEquals(countBefore+1 ,countAfter);
 
         Employee employee = employeeRepository.findById(employeeResponse.getId()).get();
         assertNotNull(employee);
@@ -304,6 +308,7 @@ public class EmployeeControllerTest {
 
         assertTrue(employeeRepository.findById(3L).isEmpty());
     }
+
     @Test
     @DatabaseSetup("/dataset/remove-employee.xml")
     @Transactional
@@ -320,6 +325,7 @@ public class EmployeeControllerTest {
         assertEquals(manager.getId(), subordinate1.getManager().getId());
         assertEquals(manager.getId(), subordinate2.getManager().getId());
     }
+
     @Test
     @DatabaseSetup("/dataset/remove-employee.xml")
     @Transactional
@@ -341,5 +347,41 @@ public class EmployeeControllerTest {
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains(INVALID_EMPLOYEE_DELETION.getDefaultMessage())));
     }
 
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/modify-employee.xml")
+    void testModifyEmployee_shouldReturnOkWhenModifiedEmployee() throws Exception {
+        EmployeeRequest employeeRequest = EmployeeRequest.builder()
+                .name("Zain")
+                .birthDate(LocalDate.of(1995, 3, 10))
+                .graduationDate(LocalDate.of(2015, 5, 26))
+                .gender(Gender.MALE)
+                .grossSalary(80000.0)
+                .managerId(1L)
+                .teamId(1L)
+                .departmentId(2L)
+                .expertises(Set.of("DataBase"))
+                .build();
+
+        mockMvc.perform(patch("/api/employees/3")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Employee updatedEmployee = employeeRepository.findAll()
+                .stream()
+                .filter(employee -> employee.getName().equals("Zain"))
+                .findFirst()
+                .orElseThrow();
+
+        assertEquals(80000.0, updatedEmployee.getGrossSalary());
+        assertEquals(Gender.MALE, updatedEmployee.getGender());
+        assertEquals(LocalDate.of(1995, 3, 10), updatedEmployee.getBirthDate());
+        assertEquals(2L, updatedEmployee.getDepartment().getId());
+        assertTrue(updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).contains("DataBase"));
+
+    }
 
 }
