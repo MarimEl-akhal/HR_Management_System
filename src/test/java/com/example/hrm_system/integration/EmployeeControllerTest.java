@@ -428,9 +428,42 @@ public class EmployeeControllerTest {
 
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
-        assertEquals(employeeBeforeUpdate.getId(),updatedEmployee.getId());
+        assertEquals(employeeBeforeUpdate.getId(), updatedEmployee.getId());
         assertEquals(employeeBeforeUpdate.getName(), updatedEmployee.getName());
         assertTrue(updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).contains("Spring Boot"));
+    }
+
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/modify-employee.xml")
+    public void testModifyEmployee_shouldUpdateBirthDateAndGraduationDate() throws Exception {
+        UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
+                .birthDate(LocalDate.of(2002,5,1))
+                .graduationDate(LocalDate.of(2024,6,15))
+                .build();
+        Employee employeeBeforeUpdate = employeeRepository.findById(2L)
+                .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND));
+
+        MvcResult result = mockMvc.perform(patch("/api/employees/2")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Employee updatedEmployee = employeeRepository.findAll()
+                .stream()
+                .filter(employee -> employee.getName().equals(employeeBeforeUpdate.getName())
+                        && employee.getBirthDate().equals(employeeRequest.getBirthDate()))
+                .findFirst()
+                .orElseThrow();
+
+        assertNotNull(updatedEmployee);
+        assertNotNull(updatedEmployee.getId());
+        assertEquals(employeeBeforeUpdate.getId(), updatedEmployee.getId());
+        assertEquals(employeeBeforeUpdate.getName(), updatedEmployee.getName());
+        assertEquals(employeeBeforeUpdate.getBirthDate(),updatedEmployee.getBirthDate());
+        assertEquals(employeeBeforeUpdate.getGraduationDate(),updatedEmployee.getGraduationDate());
     }
 
     @Test
@@ -438,15 +471,7 @@ public class EmployeeControllerTest {
     @DatabaseSetup("/dataset/modify-employee.xml")
     public void testModifyEmployee_shouldReturnBadRequestWhenDepartmentIsInvalid() throws Exception {
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
-                .name("Zain")
-                .birthDate(LocalDate.of(1995, 3, 10))
-                .graduationDate(LocalDate.of(2015, 5, 26))
-                .gender(Gender.MALE)
-                .grossSalary(80000.0)
-                .managerId(1L)
-                .teamId(1L)
                 .departmentId(999L)
-                .expertises(Set.of("Java"))
                 .build();
 
         mockMvc.perform(patch("/api/employees/3")
@@ -454,22 +479,22 @@ public class EmployeeControllerTest {
                         .content(objectMapper.writeValueAsString(employeeRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                .contains(DEPARTMENT_NOT_FOUND.getDefaultMessage())));
+                        .contains(DEPARTMENT_NOT_FOUND.getDefaultMessage())));
     }
+
     @Test
     @Transactional
     @DatabaseSetup("/dataset/modify-employee.xml")
     public void testModifyEmployee_shouldReturnBadRequest_whenEmployeeAssignedAsOwnManager() throws Exception {
-
         UpdateEmployeeRequest request = UpdateEmployeeRequest.builder()
                 .managerId(1L)
                 .build();
-
         mockMvc.perform(patch("/api/employees/1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains(INVALID_MANAGER.getDefaultMessage())));
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(INVALID_MANAGER.getDefaultMessage())));
     }
 
 
