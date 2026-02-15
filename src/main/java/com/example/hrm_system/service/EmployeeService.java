@@ -108,6 +108,12 @@ public class EmployeeService {
                 .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND,
                         "Employee not found with id: " + id));
 
+        if (employeeRequest.getManagerId() != null &&
+                employeeRequest.getManagerId().equals(employee.getId())) {
+            throw new ApiException(INVALID_MANAGER, "Employee cannot be their own manager");
+        }
+
+
         updateEmployeeField(employee, employeeRequest);
         return EmployeeMapper.toResponse(employee);
     }
