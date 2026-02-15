@@ -13,7 +13,9 @@ import com.example.hrm_system.repository.DepartmentRepository;
 import com.example.hrm_system.repository.EmployeeRepository;
 import com.example.hrm_system.repository.ExpertiseRepository;
 import com.example.hrm_system.repository.TeamRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -22,6 +24,7 @@ import static com.example.hrm_system.enums.ApiError.EMPLOYEE_NOT_FOUND;
 import static com.example.hrm_system.enums.ApiError.INVALID_EMPLOYEE_DELETION;
 
 @Service
+@AllArgsConstructor
 public class EmployeeService {
 
     private final EmployeeRepository employeeRepository;
@@ -29,16 +32,7 @@ public class EmployeeService {
     private final TeamRepository teamRepository;
     private final ExpertiseRepository expertiseRepository;
 
-    public EmployeeService(EmployeeRepository employeeRepository,
-                           DepartmentRepository departmentRepository,
-                           TeamRepository teamRepository,
-                           ExpertiseRepository expertiseRepository) {
-        this.employeeRepository = employeeRepository;
-        this.departmentRepository = departmentRepository;
-        this.teamRepository = teamRepository;
-        this.expertiseRepository = expertiseRepository;
-    }
-
+    @Transactional
     public EmployeeResponse addEmployee(EmployeeRequest employeeRequestDto) {
         Employee employee = EmployeeMapper.toEntity(employeeRequestDto);
 
@@ -88,13 +82,14 @@ public class EmployeeService {
         return EmployeeMapper.toResponse(employeeRepository.save(employee));
     }
 
-
+    @Transactional
     public EmployeeResponse findById(Long id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND, "Employee not found with id: " + id));
         return EmployeeMapper.toResponse(employee);
     }
 
+    @Transactional
     public void deleteEmployee(Long id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND,
@@ -108,5 +103,52 @@ public class EmployeeService {
             subordinate.setManager(manager);
         }
         employeeRepository.delete(employee);
+    }
+
+    public EmployeeResponse updateEmployee(Long id, EmployeeRequest employeeRequest) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow();
+        updateEmployeeField(employee, employeeRequest);
+        return EmployeeMapper.toResponse(employee);
+    }
+
+    private void updateEmployeeField(Employee employee, EmployeeRequest request) {
+        if (request.getName() != null) {
+            employee.setName(request.getName());
+        }
+        if (request.getBirthDate() != null) {
+            employee.setBirthDate(request.getBirthDate());
+        }
+        if (request.getGraduationDate() != null) {
+            employee.setGraduationDate(request.getGraduationDate());
+        }
+        if (request.getGender() != null) {
+            employee.setGender(request.getGender());
+        }
+        if (request.getGrossSalary() != null) {
+            employee.setGrossSalary(request.getGrossSalary());
+        }
+        if (request.getManagerId() != null) {
+            Employee manager = employeeRepository.findById(request.getManagerId())
+                    .orElseThrow();
+            employee.setManager(manager);
+        }
+        if (request.getDepartmentId() != null) {
+            Department department = departmentRepository.findById(request.getDepartmentId())
+                    .orElseThrow();
+            employee.setDepartment(department);
+        }
+        if (request.getTeamId() != null) {
+            Team team = teamRepository.findById(request.getTeamId())
+                    .orElseThrow();
+            employee.setTeam(team);
+        }
+        if (request.getExpertises() != null) {
+            Set<Expertise> expertises = request.getExpertises().stream()
+                    .map(expertiseName -> expertiseRepository.findByName(expertiseName)
+                            .orElseThrow())
+                    .collect(Collectors.toSet());
+            employee.setExpertises(expertises);
+        }
     }
 }

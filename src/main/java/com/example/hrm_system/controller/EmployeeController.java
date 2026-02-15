@@ -20,8 +20,8 @@ public class EmployeeController {
 
     @PostMapping
     public ResponseEntity<EmployeeResponse> addEmployee(@Valid @RequestBody EmployeeRequest employeeRequestDto) {
-        EmployeeResponse responseDto = employeeService.addEmployee(employeeRequestDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(responseDto);
+        EmployeeResponse response = employeeService.addEmployee(employeeRequestDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{id}")
@@ -34,6 +34,12 @@ public class EmployeeController {
     public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
         employeeService.deleteEmployee(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<EmployeeResponse> updateEmployee(@PathVariable Long id, @Valid @RequestBody EmployeeRequest employeeRequest) {
+        EmployeeResponse response = employeeService.updateEmployee(id, employeeRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
 }

@@ -351,7 +351,7 @@ public class EmployeeControllerTest {
     @Test
     @Transactional
     @DatabaseSetup("/dataset/modify-employee.xml")
-    void testModifyEmployee_shouldReturnOkWhenModifiedEmployee() throws Exception {
+    public void testModifyEmployee_shouldReturnOkWhenModifiedEmployee() throws Exception {
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
                 .name("Zain")
                 .birthDate(LocalDate.of(1995, 3, 10))
@@ -361,27 +361,41 @@ public class EmployeeControllerTest {
                 .managerId(1L)
                 .teamId(1L)
                 .departmentId(2L)
-                .expertises(Set.of("DataBase"))
+                .expertises(Set.of("Java"))
                 .build();
 
-        mockMvc.perform(patch("/api/employees/3")
+       MvcResult result = mockMvc.perform(patch("/api/employees/3")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employeeRequest)))
                 .andExpect(status().isOk())
                 .andReturn();
 
+        EmployeeResponse employeeResponse = objectMapper.readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
+
+        assertNotNull(employeeResponse);
+        assertNotNull(employeeResponse.getId());
+        assertEquals(employeeRequest.getName(),employeeResponse.getName());
+
+
+
         Employee updatedEmployee = employeeRepository.findAll()
                 .stream()
-                .filter(employee -> employee.getName().equals("Zain"))
+                .filter(employee -> employee.getName().equals(employeeRequest.getName())
+                        && employee.getBirthDate().equals(employeeRequest.getBirthDate()))
                 .findFirst()
                 .orElseThrow();
 
-        assertEquals(80000.0, updatedEmployee.getGrossSalary());
-        assertEquals(Gender.MALE, updatedEmployee.getGender());
-        assertEquals(LocalDate.of(1995, 3, 10), updatedEmployee.getBirthDate());
-        assertEquals(2L, updatedEmployee.getDepartment().getId());
-        assertTrue(updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).contains("DataBase"));
-
+        assertNotNull(updatedEmployee);
+        assertNotNull(updatedEmployee.getId());
+        assertEquals(employeeRequest.getName(),updatedEmployee.getName());
+        assertEquals(employeeRequest.getGrossSalary(), updatedEmployee.getGrossSalary());
+        assertEquals(employeeRequest.getGender(), updatedEmployee.getGender());
+        assertEquals(employeeRequest.getBirthDate(), updatedEmployee.getBirthDate());
+        assertEquals(employeeRequest.getGraduationDate(),updatedEmployee.getGraduationDate());
+        assertEquals(employeeRequest.getManagerId(),updatedEmployee.getManager().getId());
+        assertEquals(employeeRequest.getTeamId(),updatedEmployee.getTeam().getId());
+        assertEquals(employeeRequest.getDepartmentId(), updatedEmployee.getDepartment().getId());
+        assertTrue(updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).contains("Java"));
     }
 
 }
