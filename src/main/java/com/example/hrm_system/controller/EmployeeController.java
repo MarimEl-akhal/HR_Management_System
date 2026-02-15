@@ -2,6 +2,7 @@ package com.example.hrm_system.controller;
 
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
+import com.example.hrm_system.dto.UpdateEmployeeRequest;
 import com.example.hrm_system.service.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -35,7 +36,7 @@ public class EmployeeController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<EmployeeResponse> updateEmployee(@PathVariable Long id, @Valid @RequestBody EmployeeRequest employeeRequest) {
+    public ResponseEntity<EmployeeResponse> updateEmployee(@PathVariable Long id, @Valid @RequestBody UpdateEmployeeRequest employeeRequest) {
         EmployeeResponse response = employeeService.updateEmployee(id, employeeRequest);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

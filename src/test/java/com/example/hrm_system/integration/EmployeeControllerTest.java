@@ -2,10 +2,11 @@ package com.example.hrm_system.integration;
 
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
-import com.example.hrm_system.dto.updateEmployeeRequest;
+import com.example.hrm_system.dto.UpdateEmployeeRequest;
 import com.example.hrm_system.entity.Employee;
 import com.example.hrm_system.entity.Expertise;
 import com.example.hrm_system.enums.Gender;
+import com.example.hrm_system.exception.ApiException;
 import com.example.hrm_system.repository.EmployeeRepository;
 import com.example.hrm_system.repository.ExpertiseRepository;
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
@@ -121,7 +122,7 @@ public class EmployeeControllerTest {
 
         EmployeeResponse employeeResponse = objectMapper.readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
 
-        assertEquals(countBefore+1 ,countAfter);
+        assertEquals(countBefore + 1, countAfter);
 
         Employee employee = employeeRepository.findById(employeeResponse.getId()).get();
         assertNotNull(employee);
@@ -353,7 +354,7 @@ public class EmployeeControllerTest {
     @Transactional
     @DatabaseSetup("/dataset/modify-employee.xml")
     public void testModifyEmployee_shouldReturnOkWhenModifiedEmployee() throws Exception {
-        updateEmployeeRequest employeeRequest = updateEmployeeRequest.builder()
+        UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
                 .name("Zain")
                 .birthDate(LocalDate.of(1995, 3, 10))
                 .graduationDate(LocalDate.of(2015, 5, 26))
@@ -365,7 +366,7 @@ public class EmployeeControllerTest {
                 .expertises(Set.of("Java"))
                 .build();
 
-       MvcResult result = mockMvc.perform(patch("/api/employees/3")
+        MvcResult result = mockMvc.perform(patch("/api/employees/3")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employeeRequest)))
                 .andExpect(status().isOk())
@@ -375,8 +376,7 @@ public class EmployeeControllerTest {
 
         assertNotNull(employeeResponse);
         assertNotNull(employeeResponse.getId());
-        assertEquals(employeeRequest.getName(),employeeResponse.getName());
-
+        assertEquals(employeeRequest.getName(), employeeResponse.getName());
 
 
         Employee updatedEmployee = employeeRepository.findAll()
@@ -388,13 +388,13 @@ public class EmployeeControllerTest {
 
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
-        assertEquals(employeeRequest.getName(),updatedEmployee.getName());
+        assertEquals(employeeRequest.getName(), updatedEmployee.getName());
         assertEquals(employeeRequest.getGrossSalary(), updatedEmployee.getGrossSalary());
         assertEquals(employeeRequest.getGender(), updatedEmployee.getGender());
         assertEquals(employeeRequest.getBirthDate(), updatedEmployee.getBirthDate());
-        assertEquals(employeeRequest.getGraduationDate(),updatedEmployee.getGraduationDate());
-        assertEquals(employeeRequest.getManagerId(),updatedEmployee.getManager().getId());
-        assertEquals(employeeRequest.getTeamId(),updatedEmployee.getTeam().getId());
+        assertEquals(employeeRequest.getGraduationDate(), updatedEmployee.getGraduationDate());
+        assertEquals(employeeRequest.getManagerId(), updatedEmployee.getManager().getId());
+        assertEquals(employeeRequest.getTeamId(), updatedEmployee.getTeam().getId());
         assertEquals(employeeRequest.getDepartmentId(), updatedEmployee.getDepartment().getId());
         assertTrue(updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).contains("Java"));
     }
@@ -403,9 +403,11 @@ public class EmployeeControllerTest {
     @Transactional
     @DatabaseSetup("/dataset/modify-employee.xml")
     public void testModifyEmployee_shouldUpdateExpertise() throws Exception {
-        updateEmployeeRequest employeeRequest = updateEmployeeRequest.builder()
+        UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
                 .expertises(Set.of("Java", "Spring Boot"))
                 .build();
+        Employee employeeBeforeUpdate = employeeRepository.findById(3L)
+                .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND));
 
         MvcResult result = mockMvc.perform(patch("/api/employees/3")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -417,16 +419,18 @@ public class EmployeeControllerTest {
 
         assertTrue(employeeResponse.getExpertises().contains("Spring Boot"));
 
-
         Employee updatedEmployee = employeeRepository.findAll()
                 .stream()
-                .filter(employee -> employee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).equals(employeeRequest.getExpertises()))
+                .filter(employee -> employee.getName().equals(employeeBeforeUpdate.getName())
+                        && employee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).equals(employeeRequest.getExpertises()))
                 .findFirst()
                 .orElseThrow();
 
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
-        assertTrue(updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).contains("Java"));
+        assertEquals(employeeBeforeUpdate.getId(),updatedEmployee.getId());
+        assertEquals(employeeBeforeUpdate.getName(), updatedEmployee.getName());
+        assertTrue(updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).contains("Spring Boot"));
     }
 
 
