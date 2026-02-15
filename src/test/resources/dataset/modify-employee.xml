@@ -41,7 +41,7 @@
 
     <!-- Expertises -->
     <expertises expertise_id="1" name="Java"/>
-    <expertises expertise_id="2" name="SpringBoot"/>
+    <expertises expertise_id="2" name="Spring Boot"/>
 
     <!-- Employee Expertise -->
     <employee_expertise employee_id="1" expertise_id="1"/>

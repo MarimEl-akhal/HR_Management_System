@@ -2,6 +2,7 @@ package com.example.hrm_system.integration;
 
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
+import com.example.hrm_system.dto.updateEmployeeRequest;
 import com.example.hrm_system.entity.Employee;
 import com.example.hrm_system.entity.Expertise;
 import com.example.hrm_system.enums.Gender;
@@ -352,7 +353,7 @@ public class EmployeeControllerTest {
     @Transactional
     @DatabaseSetup("/dataset/modify-employee.xml")
     public void testModifyEmployee_shouldReturnOkWhenModifiedEmployee() throws Exception {
-        EmployeeRequest employeeRequest = EmployeeRequest.builder()
+        updateEmployeeRequest employeeRequest = updateEmployeeRequest.builder()
                 .name("Zain")
                 .birthDate(LocalDate.of(1995, 3, 10))
                 .graduationDate(LocalDate.of(2015, 5, 26))
@@ -397,5 +398,36 @@ public class EmployeeControllerTest {
         assertEquals(employeeRequest.getDepartmentId(), updatedEmployee.getDepartment().getId());
         assertTrue(updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).contains("Java"));
     }
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/modify-employee.xml")
+    public void testModifyEmployee_shouldUpdateExpertise() throws Exception {
+        updateEmployeeRequest employeeRequest = updateEmployeeRequest.builder()
+                .expertises(Set.of("Java", "Spring Boot"))
+                .build();
+
+        MvcResult result = mockMvc.perform(patch("/api/employees/3")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        EmployeeResponse employeeResponse = objectMapper.readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
+
+        assertTrue(employeeResponse.getExpertises().contains("Spring Boot"));
+
+
+        Employee updatedEmployee = employeeRepository.findAll()
+                .stream()
+                .filter(employee -> employee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).equals(employeeRequest.getExpertises()))
+                .findFirst()
+                .orElseThrow();
+
+        assertNotNull(updatedEmployee);
+        assertNotNull(updatedEmployee.getId());
+        assertTrue(updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).contains("Java"));
+    }
+
 
 }
