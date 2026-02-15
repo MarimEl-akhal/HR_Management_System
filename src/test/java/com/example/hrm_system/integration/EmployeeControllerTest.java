@@ -62,7 +62,7 @@ public class EmployeeControllerTest {
     @Test
     @Transactional
     @DatabaseSetup("/dataset/add-employee.xml")
-    void testAddEmployeeWithExpertises_shouldCreateEmployeeSuccessfully() throws Exception {
+    public void testAddEmployeeWithExpertises_shouldCreateEmployeeSuccessfully() throws Exception {
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
                 .name("Mohamed Abdelrahman")
                 .birthDate(LocalDate.of(1980, 8, 5))
@@ -100,7 +100,7 @@ public class EmployeeControllerTest {
     @Test
     @DatabaseSetup("/dataset/add-employee.xml")
     @Transactional
-    void testAddEmployeeWithoutExpertises_shouldCreateEmployeeSuccessfully() throws Exception {
+    public void testAddEmployeeWithoutExpertises_shouldCreateEmployeeSuccessfully() throws Exception {
         long countBefore = employeeRepository.count();
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
                 .name("Mohamed Abdelrahman")
@@ -139,7 +139,7 @@ public class EmployeeControllerTest {
     @Test
     @DatabaseSetup("/dataset/add-employee.xml")
     @Transactional
-    void testAddEmployee_shouldFailWhenNegativeGrossSalary() throws Exception {
+    public void testAddEmployee_shouldFailWhenNegativeGrossSalary() throws Exception {
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
                 .name("Malak Ahmed")
                 .birthDate(LocalDate.of(1977, 5, 5))
@@ -161,7 +161,7 @@ public class EmployeeControllerTest {
     @Test
     @DatabaseSetup("/dataset/add-employee.xml")
     @Transactional
-    void testAddEmployee_shouldFailWhenFutureBirthDate() throws Exception {
+    public void testAddEmployee_shouldFailWhenFutureBirthDate() throws Exception {
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
                 .name("Malak Ahmed")
                 .birthDate(LocalDate.of(2029, 5, 5))
@@ -182,7 +182,7 @@ public class EmployeeControllerTest {
     @Test
     @DatabaseSetup("/dataset/add-employee.xml")
     @Transactional
-    void testAddEmployee_shouldFailWhenManagerNotFound() throws Exception {
+    public void testAddEmployee_shouldFailWhenManagerNotFound() throws Exception {
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
                 .name("Malak Ahmed")
                 .birthDate(LocalDate.of(1977, 5, 5))
@@ -203,7 +203,7 @@ public class EmployeeControllerTest {
     @Test
     @DatabaseSetup("/dataset/add-employee.xml")
     @Transactional
-    void testAddEmployee_shouldFailWhenDepartmentNotFound() throws Exception {
+    public void testAddEmployee_shouldFailWhenDepartmentNotFound() throws Exception {
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
                 .name("Malak Ahmed")
                 .birthDate(LocalDate.of(1977, 5, 5))
@@ -224,7 +224,7 @@ public class EmployeeControllerTest {
     @Test
     @DatabaseSetup("/dataset/add-employee.xml")
     @Transactional
-    void testAddEmployee_shouldFailWhenNotFoundTeam() throws Exception {
+    public void testAddEmployee_shouldFailWhenNotFoundTeam() throws Exception {
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
                 .name("Malak Ahmed")
                 .birthDate(LocalDate.of(1977, 5, 5))
@@ -246,7 +246,7 @@ public class EmployeeControllerTest {
     @Test
     @DatabaseSetup("/dataset/add-employee.xml")
     @Transactional
-    void testAddEmployeeWithExpertises_shouldFailWhenNotFoundExpertises() throws Exception {
+    public void testAddEmployeeWithExpertises_shouldFailWhenNotFoundExpertises() throws Exception {
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
                 .name("Mohamed Abdelrahman")
                 .birthDate(LocalDate.of(1980, 8, 5))
@@ -270,7 +270,7 @@ public class EmployeeControllerTest {
     @Test
     @DatabaseSetup("/dataset/get-employee-info.xml")
     @Transactional
-    void testGetEmployeeInfo_shouldReturnOkWhenFindEmployeeById() throws Exception {
+    public void testGetEmployeeInfo_shouldReturnOkWhenFindEmployeeById() throws Exception {
         MvcResult result = mockMvc.perform(get("/api/employees/1"))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -292,7 +292,7 @@ public class EmployeeControllerTest {
     @Test
     @Transactional
     @DatabaseSetup("/dataset/get-employee-info.xml")
-    void testGetEmployeeInfo_shouldReturnNotFoundWhenEmployeeNotFound() throws Exception {
+    public void testGetEmployeeInfo_shouldReturnNotFoundWhenEmployeeNotFound() throws Exception {
         mockMvc.perform(get("/api/employees/99"))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
@@ -303,7 +303,7 @@ public class EmployeeControllerTest {
     @Test
     @DatabaseSetup("/dataset/remove-employee.xml")
     @Transactional
-    void testDeleteEmployeeWithoutSubordinates_shouldDeleteSuccessfully() throws Exception {
+    public void testDeleteEmployeeWithoutSubordinates_shouldDeleteSuccessfully() throws Exception {
         // 1 Marim -> 2 Ahmed -> 3 Asmaa , 4 Nada
         // we try delete Asmaa (id = 3)
         mockMvc.perform(delete("/api/employees/3")).andExpect(status().isNoContent()).andReturn();
@@ -314,7 +314,7 @@ public class EmployeeControllerTest {
     @Test
     @DatabaseSetup("/dataset/remove-employee.xml")
     @Transactional
-    void testDeleteEmployeeHasManagerAndSubordinates_shouldDeleteSuccessfully() throws Exception {
+    public void testDeleteEmployeeHasManagerAndSubordinates_shouldDeleteSuccessfully() throws Exception {
         // 1 Marim -> 2 Ahmed -> 3 Asmaa , 4 Nada
         // we try delete Ahmed (id = 2)
         mockMvc.perform(delete("/api/employees/2")).andExpect(status().isNoContent()).andReturn();
@@ -331,7 +331,7 @@ public class EmployeeControllerTest {
     @Test
     @DatabaseSetup("/dataset/remove-employee.xml")
     @Transactional
-    void testDeleteNotFoundEmployee_shouldReturnNotFound() throws Exception {
+    public void testDeleteNotFoundEmployee_shouldReturnNotFound() throws Exception {
         mockMvc.perform(delete("/api/employees/99"))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
@@ -341,7 +341,7 @@ public class EmployeeControllerTest {
     @Test
     @DatabaseSetup("/dataset/remove-employee.xml")
     @Transactional
-    void testDeleteRootManager_shouldReturnConflict() throws Exception {
+    public void testDeleteRootManager_shouldReturnConflict() throws Exception {
         // 1 Marim -> 2 Ahmed -> 3 Asmaa , 4 Nada
         // we try delete Ahmed (id = 2)
         mockMvc.perform(delete("/api/employees/1"))
@@ -439,13 +439,13 @@ public class EmployeeControllerTest {
     @DatabaseSetup("/dataset/modify-employee.xml")
     public void testModifyEmployee_shouldUpdateBirthDateAndGraduationDate() throws Exception {
         UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
-                .birthDate(LocalDate.of(2002,5,1))
-                .graduationDate(LocalDate.of(2024,6,15))
+                .birthDate(LocalDate.of(2002, 5, 1))
+                .graduationDate(LocalDate.of(2024, 6, 15))
                 .build();
         Employee employeeBeforeUpdate = employeeRepository.findById(2L)
                 .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND));
 
-         mockMvc.perform(patch("/api/employees/2")
+        mockMvc.perform(patch("/api/employees/2")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employeeRequest)))
                 .andExpect(status().isOk())
@@ -462,8 +462,8 @@ public class EmployeeControllerTest {
         assertNotNull(updatedEmployee.getId());
         assertEquals(employeeBeforeUpdate.getId(), updatedEmployee.getId());
         assertEquals(employeeBeforeUpdate.getName(), updatedEmployee.getName());
-        assertEquals(employeeBeforeUpdate.getBirthDate(),updatedEmployee.getBirthDate());
-        assertEquals(employeeBeforeUpdate.getGraduationDate(),updatedEmployee.getGraduationDate());
+        assertEquals(employeeBeforeUpdate.getBirthDate(), updatedEmployee.getBirthDate());
+        assertEquals(employeeBeforeUpdate.getGraduationDate(), updatedEmployee.getGraduationDate());
     }
 
     @Test
@@ -495,6 +495,7 @@ public class EmployeeControllerTest {
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(INVALID_MANAGER.getDefaultMessage())));
     }
+
     @Test
     @Transactional
     @DatabaseSetup("/dataset/modify-employee.xml")
@@ -518,7 +519,6 @@ public class EmployeeControllerTest {
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
     }
-
 
 
 }
