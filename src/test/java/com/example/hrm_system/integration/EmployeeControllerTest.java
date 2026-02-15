@@ -445,7 +445,7 @@ public class EmployeeControllerTest {
         Employee employeeBeforeUpdate = employeeRepository.findById(2L)
                 .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND));
 
-        MvcResult result = mockMvc.perform(patch("/api/employees/2")
+         mockMvc.perform(patch("/api/employees/2")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employeeRequest)))
                 .andExpect(status().isOk())
@@ -469,11 +469,10 @@ public class EmployeeControllerTest {
     @Test
     @Transactional
     @DatabaseSetup("/dataset/modify-employee.xml")
-    public void testModifyEmployee_shouldReturnBadRequestWhenDepartmentIsInvalid() throws Exception {
-        EmployeeRequest employeeRequest = EmployeeRequest.builder()
+    public void testModifyEmployee_shouldReturnNotFoundWhenDepartmentIsInvalid() throws Exception {
+        UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
                 .departmentId(999L)
                 .build();
-
         mockMvc.perform(patch("/api/employees/3")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employeeRequest)))
@@ -496,6 +495,30 @@ public class EmployeeControllerTest {
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(INVALID_MANAGER.getDefaultMessage())));
     }
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/modify-employee.xml")
+    public void testModifyEmployee_shouldReturnNotFoundWhenEmployeeIsInvalid() throws Exception {
+        UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
+                .name("Reem")
+                .birthDate(LocalDate.of(1995, 3, 10))
+                .graduationDate(LocalDate.of(2015, 5, 26))
+                .gender(Gender.FEMALE)
+                .grossSalary(80000.0)
+                .managerId(1L)
+                .teamId(1L)
+                .departmentId(2L)
+                .expertises(Set.of("Java"))
+                .build();
+
+        mockMvc.perform(patch("/api/employees/999")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
+    }
+
 
 
 }
