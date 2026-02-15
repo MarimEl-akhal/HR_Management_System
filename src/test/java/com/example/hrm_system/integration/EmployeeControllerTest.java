@@ -433,5 +433,44 @@ public class EmployeeControllerTest {
         assertTrue(updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).contains("Spring Boot"));
     }
 
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/modify-employee.xml")
+    public void testModifyEmployee_shouldReturnBadRequestWhenDepartmentIsInvalid() throws Exception {
+        EmployeeRequest employeeRequest = EmployeeRequest.builder()
+                .name("Zain")
+                .birthDate(LocalDate.of(1995, 3, 10))
+                .graduationDate(LocalDate.of(2015, 5, 26))
+                .gender(Gender.MALE)
+                .grossSalary(80000.0)
+                .managerId(1L)
+                .teamId(1L)
+                .departmentId(999L)
+                .expertises(Set.of("Java"))
+                .build();
+
+        mockMvc.perform(patch("/api/employees/3")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                .contains(DEPARTMENT_NOT_FOUND.getDefaultMessage())));
+    }
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/modify-employee.xml")
+    public void testModifyEmployee_shouldReturnBadRequest_whenEmployeeAssignedAsOwnManager() throws Exception {
+
+        UpdateEmployeeRequest request = UpdateEmployeeRequest.builder()
+                .managerId(1L)
+                .build();
+
+        mockMvc.perform(patch("/api/employees/1")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString().contains(INVALID_MANAGER.getDefaultMessage())));
+    }
+
 
 }
