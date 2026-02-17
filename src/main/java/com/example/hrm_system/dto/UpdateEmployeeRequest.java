@@ -1,6 +1,7 @@
 package com.example.hrm_system.dto;
 
 import com.example.hrm_system.enums.Gender;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;

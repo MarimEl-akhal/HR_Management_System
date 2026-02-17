@@ -2,6 +2,7 @@ package com.example.hrm_system.service;
 
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
+import com.example.hrm_system.dto.JobContext;
 import com.example.hrm_system.dto.UpdateEmployeeRequest;
 import com.example.hrm_system.entity.Department;
 import com.example.hrm_system.entity.Employee;
@@ -32,41 +33,41 @@ public class EmployeeService {
     private final ExpertiseRepository expertiseRepository;
 
 
-    public EmployeeResponse addEmployee(EmployeeRequest employeeRequestDto) {
-        Employee employee = EmployeeMapper.toEntity(employeeRequestDto);
+    public EmployeeResponse addEmployee(EmployeeRequest employeeRequest) {
+        Employee employee = EmployeeMapper.toEntity(employeeRequest);
 
-        if (employeeRequestDto.getManagerId() != null) {
-            Employee manager = employeeRepository.findById(employeeRequestDto.getManagerId())
+        if (employeeRequest.getManagerId() != null) {
+            Employee manager = employeeRepository.findById(employeeRequest.getManagerId())
                     .orElseThrow(() -> new ApiException(
                             ApiError.MANAGER_NOT_FOUND,
-                            "Manager not found with id: " + employeeRequestDto.getManagerId()
+                            "Manager not found with id: " + employeeRequest.getManagerId()
                     ));
             employee.setManager(manager);
         }
 
 
-        if (employeeRequestDto.getDepartmentId() != null) {
-            Department department = departmentRepository.findById(employeeRequestDto.getDepartmentId())
+        if (employeeRequest.getDepartmentId() != null) {
+            Department department = departmentRepository.findById(employeeRequest.getDepartmentId())
                     .orElseThrow(() -> new ApiException(
                             ApiError.DEPARTMENT_NOT_FOUND,
-                            "Department not found with id: " + employeeRequestDto.getDepartmentId()
+                            "Department not found with id: " + employeeRequest.getDepartmentId()
                     ));
             employee.setDepartment(department);
         }
 
 
-        if (employeeRequestDto.getTeamId() != null) {
-            Team team = teamRepository.findById(employeeRequestDto.getTeamId())
+        if (employeeRequest.getTeamId() != null) {
+            Team team = teamRepository.findById(employeeRequest.getTeamId())
                     .orElseThrow(() -> new ApiException(
                             ApiError.TEAM_NOT_FOUND,
-                            "Team not found with id: " + employeeRequestDto.getTeamId()
+                            "Team not found with id: " + employeeRequest.getTeamId()
                     ));
             employee.setTeam(team);
         }
 
 
-        if (employeeRequestDto.getExpertises() != null && !employeeRequestDto.getExpertises().isEmpty()) {
-            Set<Expertise> expertises = employeeRequestDto.getExpertises()
+        if (employeeRequest.getExpertises() != null && !employeeRequest.getExpertises().isEmpty()) {
+            Set<Expertise> expertises = employeeRequest.getExpertises()
                     .stream()
                     .map(name -> expertiseRepository.findByName(name)
                             .orElseThrow(() -> new ApiException(
@@ -88,6 +89,7 @@ public class EmployeeService {
         return EmployeeMapper.toResponse(employee);
     }
 
+
     public void deleteEmployee(Long id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND,
@@ -103,58 +105,85 @@ public class EmployeeService {
         employeeRepository.delete(employee);
     }
 
+
     public EmployeeResponse updateEmployee(Long id, UpdateEmployeeRequest employeeRequest) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND,
                         "Employee not found with id: " + id));
 
-        if (employeeRequest.getManagerId() != null &&
-                employeeRequest.getManagerId().equals(employee.getId())) {
-            throw new ApiException(INVALID_MANAGER, "Employee cannot be their own manager");
+        Department department;
+        if (employeeRequest.getDepartmentId() != null) {
+            department = departmentRepository.findById(employeeRequest.getDepartmentId())
+                    .orElseThrow(() -> new ApiException(DEPARTMENT_NOT_FOUND,
+                            "Department not found with id: " + employeeRequest.getDepartmentId()));
+        } else {
+            department = null;
+        }
+
+        Team team;
+        if (employeeRequest.getTeamId() != null) {
+            team = teamRepository.findById(employeeRequest.getTeamId())
+                    .orElseThrow(() -> new ApiException(TEAM_NOT_FOUND,
+                            "Team not found with id: " + employeeRequest.getTeamId()));
+        } else {
+            team = null;
+        }
+
+        Employee manager;
+        if (employeeRequest.getManagerId() != null) {
+            if (employeeRequest.getManagerId().equals(id)) {
+                throw new ApiException(INVALID_MANAGER);
+            }
+            manager = employeeRepository.findById(employeeRequest.getManagerId())
+                    .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND,
+                            "Manager not found with id: " + employeeRequest.getManagerId()));
+        } else {
+            manager = null;
         }
 
 
-        updateEmployeeField(employee, employeeRequest);
-        return EmployeeMapper.toResponse(employee);
+        Set<Expertise> expertises;
+        if (employeeRequest.getExpertises() != null && !employeeRequest.getExpertises().isEmpty()) {
+            expertises = employeeRequest.getExpertises()
+                    .stream()
+                    .map(name -> expertiseRepository.findByName(name)
+                            .orElseThrow(() -> new ApiException(
+                                    ApiError.EXPERTISE_NOT_FOUND,
+                                    "Expertise not found with name: " + name
+                            )))
+                    .collect(Collectors.toSet());
+        } else {
+            expertises = null;
+        }
+
+        JobContext jobContext = resolveUpdateEntityField(manager, department, team, expertises);
+        Employee updateEmployee = updateEmployeeField(employee, employeeRequest, jobContext);
+        Employee saveUpdatedEmployee = employeeRepository.save(updateEmployee);
+        return EmployeeMapper.toResponse(saveUpdatedEmployee);
     }
 
-    private void updateEmployeeField(Employee employee, UpdateEmployeeRequest request) {
-        if (request.getName() != null) {
-            employee.setName(request.getName());
-        }
-        if (request.getBirthDate() != null) {
-            employee.setBirthDate(request.getBirthDate());
-        }
-        if (request.getGraduationDate() != null) {
-            employee.setGraduationDate(request.getGraduationDate());
-        }
-        if (request.getGender() != null) {
-            employee.setGender(request.getGender());
-        }
-        if (request.getGrossSalary() != null) {
-            employee.setGrossSalary(request.getGrossSalary());
-        }
-        if (request.getManagerId() != null) {
-            Employee manager = employeeRepository.findById(request.getManagerId())
-                    .orElseThrow(() -> new ApiException(MANAGER_NOT_FOUND, "Manager not found with id: " + request.getManagerId()));
-            employee.setManager(manager);
-        }
-        if (request.getDepartmentId() != null) {
-            Department department = departmentRepository.findById(request.getDepartmentId())
-                    .orElseThrow(() -> new ApiException(DEPARTMENT_NOT_FOUND, "Department not found with id: " + request.getDepartmentId()));
-            employee.setDepartment(department);
-        }
-        if (request.getTeamId() != null) {
-            Team team = teamRepository.findById(request.getTeamId())
-                    .orElseThrow(() -> new ApiException(TEAM_NOT_FOUND, "Team not found with id: " + request.getTeamId()));
-            employee.setTeam(team);
-        }
-        if (request.getExpertises() != null) {
-            Set<Expertise> expertises = request.getExpertises().stream()
-                    .map(expertiseName -> expertiseRepository.findByName(expertiseName)
-                            .orElseThrow(() -> new ApiException(EXPERTISE_NOT_FOUND, "Expertise not found with name: " + expertiseName)))
-                    .collect(Collectors.toSet());
-            employee.setExpertises(expertises);
-        }
+    private Employee updateEmployeeField(Employee employee, UpdateEmployeeRequest request, JobContext jobContext) {
+        return Employee.builder()
+                .id(employee.getId())
+                .name(request.getName() != null ? request.getName() : employee.getName())
+                .birthDate(request.getBirthDate() != null ? request.getBirthDate() : employee.getBirthDate())
+                .graduationDate(request.getGraduationDate() != null ? request.getGraduationDate() : employee.getGraduationDate())
+                .gender(request.getGender() != null ? request.getGender() : employee.getGender())
+                .grossSalary(request.getGrossSalary() != null ? request.getGrossSalary() : employee.getGrossSalary())
+                .manager(jobContext.getManager())
+                .department(jobContext.getDepartment())
+                .team(jobContext.getTeam())
+                .expertises(jobContext.getExpertises())
+                .build();
+
+    }
+
+    private JobContext resolveUpdateEntityField(Employee manager, Department department, Team team, Set<Expertise> expertises) {
+        return JobContext.builder()
+                .manager(manager)
+                .department(department)
+                .team(team)
+                .expertises(expertises)
+                .build();
     }
 }

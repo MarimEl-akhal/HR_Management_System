@@ -18,15 +18,15 @@ public class EmployeeController {
     private final EmployeeService employeeService;
 
     @PostMapping
-    public ResponseEntity<EmployeeResponse> addEmployee(@Valid @RequestBody EmployeeRequest employeeRequestDto) {
-        EmployeeResponse response = employeeService.addEmployee(employeeRequestDto);
+    public ResponseEntity<EmployeeResponse> addEmployee(@Valid @RequestBody EmployeeRequest employeeRequest) {
+        EmployeeResponse response = employeeService.addEmployee(employeeRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<EmployeeResponse> findEmployeeById(@PathVariable Long id) {
-        EmployeeResponse responseDto = employeeService.findById(id);
-        return ResponseEntity.ok(responseDto);
+        EmployeeResponse response = employeeService.findById(id);
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
