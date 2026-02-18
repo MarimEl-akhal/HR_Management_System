@@ -623,6 +623,64 @@ public class EmployeeControllerTest {
                         .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
     }
 
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/modify-employee.xml")
+    public void testModifyEmployee_whenBirthDateAndGraduationDateNullable_shouldReturnOk() throws Exception {
+        final LocalDate UPDATE_NULLABLE_BIRTH_DATE = null;
+        final LocalDate UPDATE_NULLABLE_GRAD_DATE = null;
+
+
+        UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
+                .birthDate(UPDATE_NULLABLE_BIRTH_DATE)
+                .graduationDate(UPDATE_NULLABLE_GRAD_DATE)
+                .build();
+
+        MvcResult result = mockMvc.perform(patch("/api/employees/" + EXIST_EMPLOYEE2_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        EmployeeResponse employeeResponse = objectMapper.readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
+        assertNotNull(employeeResponse);
+        assertNotNull(employeeResponse.getId());
+
+        Employee updatedEmployee = employeeRepository.findAll()
+                .stream()
+                .filter(employee -> employee.getId().equals(employeeResponse.getId())
+                        && employee.getBirthDate().equals(employeeRequest.getBirthDate())
+                        && employee.getGraduationDate().equals(employeeRequest.getBirthDate()))
+                .findFirst()
+                .orElseThrow();
+
+
+        assertNotNull(updatedEmployee);
+        assertNotNull(updatedEmployee.getId());
+        assertEquals(employeeResponse.getId(), updatedEmployee.getId());
+        assertEquals(employeeRequest.getBirthDate(), updatedEmployee.getBirthDate());
+        assertEquals(employeeRequest.getGraduationDate(), updatedEmployee.getGraduationDate());
+    }
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/modify-employee.xml")
+    public void testModifyEmployee_whenNameNullable_shouldReturnBadRequest() throws Exception {
+
+        final String UPDATE_NULLABLE_NAME = null;
+
+        UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
+                .name(UPDATE_NULLABLE_NAME)
+                .build();
+
+        mockMvc.perform(patch("/api/employees/" + EXIST_EMPLOYEE2_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(INVALID_NAME.getDefaultMessage())));
+    }
+
+
 
 
 }
