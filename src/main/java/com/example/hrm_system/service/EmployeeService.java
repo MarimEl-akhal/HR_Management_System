@@ -2,7 +2,7 @@ package com.example.hrm_system.service;
 
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
-import com.example.hrm_system.dto.JobContext;
+import com.example.hrm_system.dto.UpdateEmployeeWorkDetail;
 import com.example.hrm_system.dto.UpdateEmployeeRequest;
 import com.example.hrm_system.entity.Department;
 import com.example.hrm_system.entity.Employee;
@@ -156,18 +156,18 @@ public class EmployeeService {
             expertises = null;
         }
 
-        JobContext jobContext = JobContext.builder()
+        UpdateEmployeeWorkDetail workDetail = UpdateEmployeeWorkDetail.builder()
                 .manager(manager)
                 .department(department)
                 .team(team)
                 .expertises(expertises)
                 .build();
-        Employee updateEmployee = updateEmployeeField(employee, employeeRequest, jobContext);
+        Employee updateEmployee = updateEmployeeField(employee, employeeRequest, workDetail);
         Employee saveUpdatedEmployee = employeeRepository.save(updateEmployee);
         return EmployeeMapper.toResponse(saveUpdatedEmployee);
     }
 
-    private Employee updateEmployeeField(Employee employee, UpdateEmployeeRequest request, JobContext jobContext) {
+    private Employee updateEmployeeField(Employee employee, UpdateEmployeeRequest request, UpdateEmployeeWorkDetail workDetail) {
         return Employee.builder()
                 .id(employee.getId())
                 .name(request.getName() != null ? request.getName() : employee.getName())
@@ -175,10 +175,10 @@ public class EmployeeService {
                 .graduationDate(request.getGraduationDate() != null ? request.getGraduationDate() : employee.getGraduationDate())
                 .gender(request.getGender() != null ? request.getGender() : employee.getGender())
                 .grossSalary(request.getGrossSalary() != null ? request.getGrossSalary() : employee.getGrossSalary())
-                .manager(jobContext.getManager())
-                .department(jobContext.getDepartment())
-                .team(jobContext.getTeam())
-                .expertises(jobContext.getExpertises())
+                .manager(workDetail.getManager() != null ? workDetail.getManager() : employee.getManager())
+                .department(workDetail.getDepartment() != null ? workDetail.getDepartment() : employee.getDepartment())
+                .team(workDetail.getTeam() != null ? workDetail.getTeam() : employee.getTeam())
+                .expertises(workDetail.getExpertises() != null ? workDetail.getExpertises() : employee.getExpertises())
                 .build();
 
     }

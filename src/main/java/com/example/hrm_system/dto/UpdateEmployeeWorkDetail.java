@@ -15,7 +15,7 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class JobContext {
+public class UpdateEmployeeWorkDetail {
     private Employee manager;
     private Department department;
     private Team team;
