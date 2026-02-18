@@ -156,7 +156,12 @@ public class EmployeeService {
             expertises = null;
         }
 
-        JobContext jobContext = resolveUpdateEntityField(manager, department, team, expertises);
+        JobContext jobContext = JobContext.builder()
+                .manager(manager)
+                .department(department)
+                .team(team)
+                .expertises(expertises)
+                .build();
         Employee updateEmployee = updateEmployeeField(employee, employeeRequest, jobContext);
         Employee saveUpdatedEmployee = employeeRepository.save(updateEmployee);
         return EmployeeMapper.toResponse(saveUpdatedEmployee);
@@ -178,12 +183,4 @@ public class EmployeeService {
 
     }
 
-    private JobContext resolveUpdateEntityField(Employee manager, Department department, Team team, Set<Expertise> expertises) {
-        return JobContext.builder()
-                .manager(manager)
-                .department(department)
-                .team(team)
-                .expertises(expertises)
-                .build();
-    }
 }

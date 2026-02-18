@@ -47,19 +47,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @DbUnitConfiguration(databaseConnection = "dataSource")
 @TestPropertySource(locations = "classpath:application-test.yml")
 public class EmployeeControllerTest {
-    @Autowired
-    private MockMvc mockMvc;
-
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Autowired
-    private EmployeeRepository employeeRepository;
-
-    @Autowired
-    private ExpertiseRepository expertiseRepository;
-
-
     private static final Gender FEMALE_EMPLOYEE = Gender.FEMALE;
     private static final Gender MALE_EMPLOYEE = Gender.MALE;
     private static final Long NO_EXIST_EMPLOYEE_ID = 99L;
@@ -76,6 +63,14 @@ public class EmployeeControllerTest {
     private static final Long EXIST_EMPLOYEE2_ID = 2L;
     private static final Long EXIST_EMPLOYEE3_ID = 3L;
     private static final Long EXIST_EMPLOYEE4_ID = 4L;
+    @Autowired
+    private MockMvc mockMvc;
+    @Autowired
+    private ObjectMapper objectMapper;
+    @Autowired
+    private EmployeeRepository employeeRepository;
+    @Autowired
+    private ExpertiseRepository expertiseRepository;
 
     @Test
     @Transactional
@@ -111,7 +106,7 @@ public class EmployeeControllerTest {
 
         assertNotNull(employee);
         assertNotNull(employee.getId());
-        assertEquals(employee.getId(),employeeResponse.getId());
+        assertEquals(employee.getId(), employeeResponse.getId());
         assertEquals(employeeRequest.getName(), employee.getName());
         assertEquals(employeeRequest.getBirthDate(), employee.getBirthDate());
         assertEquals(employeeRequest.getGender(), employee.getGender());
@@ -158,7 +153,7 @@ public class EmployeeControllerTest {
         Employee employee = employeeRepository.findById(employeeResponse.getId()).get();
         assertNotNull(employee);
         assertNotNull(employee.getId());
-        assertEquals(employee.getId(),employeeResponse.getId());
+        assertEquals(employee.getId(), employeeResponse.getId());
         assertEquals(employeeRequest.getName(), employee.getName());
         assertEquals(employeeRequest.getBirthDate(), employee.getBirthDate());
         assertEquals(employeeRequest.getGender(), employee.getGender());
@@ -360,7 +355,7 @@ public class EmployeeControllerTest {
 
         assertNotNull(employee);
         assertNotNull(employee.getId());
-        assertEquals(employee.getId(),employeeResponse.getId());
+        assertEquals(employee.getId(), employeeResponse.getId());
         assertEquals(EXIST_EMPLOYEE_NAME, employee.getName());
         assertEquals(EXIST_EMPLOYEE_BIRTH_DATE, employee.getBirthDate());
         assertEquals(EXIST_EMPLOYEE_GRAD_DATE, employee.getGraduationDate());
@@ -480,7 +475,7 @@ public class EmployeeControllerTest {
 
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
-        assertEquals(employeeResponse.getId(),updatedEmployee.getId());
+        assertEquals(employeeResponse.getId(), updatedEmployee.getId());
         assertEquals(employeeRequest.getName(), updatedEmployee.getName());
         assertEquals(employeeRequest.getGrossSalary(), updatedEmployee.getGrossSalary());
         assertEquals(employeeRequest.getGender(), updatedEmployee.getGender());
@@ -574,7 +569,7 @@ public class EmployeeControllerTest {
         UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
                 .departmentId(NO_EXIST_DEPARTMENT_ID)
                 .build();
-        mockMvc.perform(patch("/api/employees/"+EXIST_EMPLOYEE3_ID)
+        mockMvc.perform(patch("/api/employees/" + EXIST_EMPLOYEE3_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(employeeRequest)))
                 .andExpect(status().isNotFound())
@@ -589,7 +584,7 @@ public class EmployeeControllerTest {
         UpdateEmployeeRequest request = UpdateEmployeeRequest.builder()
                 .managerId(EXIST_MANAGER_ID)
                 .build();
-        mockMvc.perform(patch("/api/employees/"+EXIST_MANAGER_ID)
+        mockMvc.perform(patch("/api/employees/" + EXIST_MANAGER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -621,13 +616,13 @@ public class EmployeeControllerTest {
                 .expertises(UPDATE_EXPERTISES)
                 .build();
 
-        mockMvc.perform(patch("/api/employees/"+NO_EXIST_EMPLOYEE_ID)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(employeeRequest)))
+        mockMvc.perform(patch("/api/employees/" + NO_EXIST_EMPLOYEE_ID)
+                        .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(employeeRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
     }
+
 
 
 }
