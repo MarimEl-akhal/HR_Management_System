@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -79,7 +80,7 @@ public class EmployeeControllerTest {
         final String EMPLOYEE_NAME = "Mohamed Abdelrahman";
         final LocalDate EMPLOYEE_BIRTH_DATE = LocalDate.of(1980, 8, 5);
         final LocalDate EMPLOYEE_GRADUATION_DATE = LocalDate.of(2014, 5, 10);
-        final Double EMPLOYEE_GROSS_SALARY = 70000.0;
+        final BigDecimal EMPLOYEE_GROSS_SALARY = BigDecimal.valueOf(70000);
 
 
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
@@ -126,7 +127,7 @@ public class EmployeeControllerTest {
         final String EMPLOYEE_NAME = "Mohamed Abdelrahman";
         final LocalDate EMPLOYEE_BIRTH_DATE = LocalDate.of(1980, 8, 5);
         final LocalDate EMPLOYEE_GRADUATION_DATE = LocalDate.of(2014, 5, 10);
-        final Double EMPLOYEE_GROSS_SALARY = 70000.0;
+        final BigDecimal EMPLOYEE_GROSS_SALARY = BigDecimal.valueOf(70000.0);
 
 
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
@@ -170,7 +171,7 @@ public class EmployeeControllerTest {
         final String EMPLOYEE_NAME = "Mohamed Abdelrahman";
         final LocalDate EMPLOYEE_BIRTH_DATE = LocalDate.of(1980, 8, 5);
         final LocalDate EMPLOYEE_GRADUATION_DATE = LocalDate.of(2014, 5, 10);
-        final Double NEGATIVE_GROSS_SALARY = -70000.0; //Invalid gross salary
+        final BigDecimal NEGATIVE_GROSS_SALARY = BigDecimal.valueOf(-70000.0); //Invalid gross salary
 
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
                 .name(EMPLOYEE_NAME)
@@ -198,7 +199,7 @@ public class EmployeeControllerTest {
         final String EMPLOYEE_NAME = "Mohamed Abdelrahman";
         final LocalDate INVALID_BIRTH_DATE = LocalDate.of(2027, 8, 5); // Invalid birthDate
         final LocalDate EMPLOYEE_GRADUATION_DATE = LocalDate.of(2014, 5, 10);
-        final Double EMPLOYEE_GROSS_SALARY = 70000.0;
+        final BigDecimal EMPLOYEE_GROSS_SALARY = BigDecimal.valueOf(70000.0);
 
 
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
@@ -228,7 +229,7 @@ public class EmployeeControllerTest {
         final String EMPLOYEE_NAME = "Malak Ziad";
         final LocalDate EMPLOYEE_BIRTH_DATE = LocalDate.of(2003, 3, 14);
         final LocalDate EMPLOYEE_GRADUATION_DATE = LocalDate.of(2024, 5, 30);
-        final Double EMPLOYEE_GROSS_SALARY = 90000.0;
+        final BigDecimal EMPLOYEE_GROSS_SALARY = BigDecimal.valueOf(90000.0);
 
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
                 .name(EMPLOYEE_NAME)
@@ -255,7 +256,7 @@ public class EmployeeControllerTest {
         final String EMPLOYEE_NAME = "Mohamed";
         final LocalDate EMPLOYEE_BIRTH_DATE = LocalDate.of(1980, 8, 5);
         final LocalDate EMPLOYEE_GRADUATION_DATE = LocalDate.of(2014, 5, 10);
-        final Double EMPLOYEE_GROSS_SALARY = 70000.0;
+        final BigDecimal EMPLOYEE_GROSS_SALARY = BigDecimal.valueOf(70000.0);
 
 
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
@@ -284,7 +285,7 @@ public class EmployeeControllerTest {
         final String EMPLOYEE_NAME = "Malak Ziad";
         final LocalDate EMPLOYEE_BIRTH_DATE = LocalDate.of(2003, 3, 14);
         final LocalDate EMPLOYEE_GRADUATION_DATE = LocalDate.of(2024, 5, 30);
-        final Double EMPLOYEE_GROSS_SALARY = 90000.0;
+        final BigDecimal EMPLOYEE_GROSS_SALARY = BigDecimal.valueOf(90000.0);
 
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
                 .name(EMPLOYEE_NAME)
@@ -312,7 +313,7 @@ public class EmployeeControllerTest {
         final String EMPLOYEE_NAME = "Mohamed Abdelrahman";
         final LocalDate EMPLOYEE_BIRTH_DATE = LocalDate.of(1980, 8, 5);
         final LocalDate EMPLOYEE_GRADUATION_DATE = LocalDate.of(2014, 5, 10);
-        final Double EMPLOYEE_GROSS_SALARY = 70000.0;
+        final BigDecimal EMPLOYEE_GROSS_SALARY = BigDecimal.valueOf(70000.0);
         final Set<String> NOT_FOUND_EXPERTISES = Set.of("DataBase", "React"); //Invalid expertises
 
         EmployeeRequest employeeRequest = EmployeeRequest.builder()
@@ -343,7 +344,7 @@ public class EmployeeControllerTest {
         final String EXIST_EMPLOYEE_NAME = "Marim Mohamed";
         final LocalDate EXIST_EMPLOYEE_BIRTH_DATE = LocalDate.of(1975, 1, 1);
         final LocalDate EXIST_EMPLOYEE_GRAD_DATE = LocalDate.of(2000, 1, 1);
-        final Double EXIST_EMPLOYEE_GROSS_SALARY = 100000.0;
+        final BigDecimal EXIST_EMPLOYEE_GROSS_SALARY = BigDecimal.valueOf(100000.00);
 
         MvcResult result = mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID))
                 .andExpect(status().isOk())
@@ -438,7 +439,7 @@ public class EmployeeControllerTest {
         final String UPDATE_NAME = "Zain";
         final LocalDate UPDATE_BIRTH_DATE = LocalDate.of(1995, 3, 10);
         final LocalDate UPDATE_GRAD_DATE = LocalDate.of(2015, 5, 26);
-        final Double UPDATE_GROSS_SALARY = 80000.0;
+        final BigDecimal UPDATE_GROSS_SALARY = BigDecimal.valueOf(80000.0);
         final Set<String> UPDATE_EXPERTISES = Set.of("Java");
 
 
@@ -600,7 +601,7 @@ public class EmployeeControllerTest {
         final String UPDATE_NAME = "Reem";
         final LocalDate UPDATE_BIRTH_DATE = LocalDate.of(1995, 3, 10);
         final LocalDate UPDATE_GRAD_DATE = LocalDate.of(2015, 5, 26);
-        final Double UPDATE_GROSS_SALARY = 80000.0;
+        final BigDecimal UPDATE_GROSS_SALARY = BigDecimal.valueOf(80000.0);
         final Set<String> UPDATE_EXPERTISES = Set.of("Java");
 
 
@@ -666,7 +667,7 @@ public class EmployeeControllerTest {
     @Test
     @Transactional
     @DatabaseSetup("/dataset/modify-employee.xml")
-    public void testModifyEmployee_whenNameNullable_shouldReturnOk() throws Exception {
+    public void testModifyEmployee_whenNameNullable_shouldReturnOkIgnoreChanges() throws Exception {
 
         UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
                 .name(null)
@@ -686,6 +687,6 @@ public class EmployeeControllerTest {
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
         assertEquals(employeeResponse.getId(), updatedEmployee.getId());
-        assertEquals(employeeRequest.getName(), updatedEmployee.getName());
+        assertEquals(employeeResponse.getName(), updatedEmployee.getName());
     }
 }

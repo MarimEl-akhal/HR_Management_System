@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -28,7 +29,7 @@ public class UpdateEmployeeRequest {
     private Gender gender;
 
     @Positive
-    private Double grossSalary;
+    private BigDecimal grossSalary;
 
     private Long managerId;
 

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -27,18 +28,18 @@ public class Employee {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "birth_date", nullable = false)
+    @Column(name = "birth_date")
     private LocalDate birthDate;
 
-    @Column(name = "graduation_date", nullable = false)
+    @Column(name = "graduation_date")
     private LocalDate graduationDate;
 
-    @Column(nullable = false)
+
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @Column(name = "gross_salary", nullable = false)
-    private Double grossSalary;
+    @Column(name = "gross_salary")
+    private BigDecimal grossSalary;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
