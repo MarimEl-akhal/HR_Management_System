@@ -1,23 +1,27 @@
 package com.example.hrm_system.service;
 
+import com.example.hrm_system.configuration.JacksonConfiguration;
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
-import com.example.hrm_system.dto.UpdateEmployeeWorkDetail;
-import com.example.hrm_system.dto.UpdateEmployeeRequest;
 import com.example.hrm_system.entity.Department;
 import com.example.hrm_system.entity.Employee;
 import com.example.hrm_system.entity.Expertise;
 import com.example.hrm_system.entity.Team;
 import com.example.hrm_system.enums.ApiError;
+import com.example.hrm_system.enums.Gender;
 import com.example.hrm_system.exception.ApiException;
 import com.example.hrm_system.mapper.EmployeeMapper;
 import com.example.hrm_system.repository.DepartmentRepository;
 import com.example.hrm_system.repository.EmployeeRepository;
 import com.example.hrm_system.repository.ExpertiseRepository;
 import com.example.hrm_system.repository.TeamRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -31,6 +35,7 @@ public class EmployeeService {
     private final DepartmentRepository departmentRepository;
     private final TeamRepository teamRepository;
     private final ExpertiseRepository expertiseRepository;
+    private final JacksonConfiguration jacksonConfiguration;
 
 
     public EmployeeResponse addEmployee(EmployeeRequest employeeRequest) {
@@ -106,81 +111,87 @@ public class EmployeeService {
     }
 
 
-    public EmployeeResponse updateEmployee(Long id, UpdateEmployeeRequest employeeRequest) {
+    public EmployeeResponse updateEmployee(Long id, Map<String, Object> updates) {
         Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND,
-                        "Employee not found with id: " + id));
+                .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND, "Employee not found with id: " + id));
 
-        Department department;
-        if (employeeRequest.getDepartmentId() != null) {
-            department = departmentRepository.findById(employeeRequest.getDepartmentId())
-                    .orElseThrow(() -> new ApiException(DEPARTMENT_NOT_FOUND,
-                            "Department not found with id: " + employeeRequest.getDepartmentId()));
-        } else {
-            department = null;
-        }
 
-        Team team;
-        if (employeeRequest.getTeamId() != null) {
-            team = teamRepository.findById(employeeRequest.getTeamId())
-                    .orElseThrow(() -> new ApiException(TEAM_NOT_FOUND,
-                            "Team not found with id: " + employeeRequest.getTeamId()));
-        } else {
-            team = null;
-        }
-
-        Employee manager;
-        if (employeeRequest.getManagerId() != null) {
-            if (employeeRequest.getManagerId().equals(id)) {
-                throw new ApiException(INVALID_MANAGER);
+        if (updates.containsKey("departmentId")) {
+            if (updates.get("departmentId") == null) {
+                employee.setDepartment(null);
+            } else {
+                Long deptId = jacksonConfiguration.objectMapper().convertValue(updates.get("departmentId"), Long.class);
+                Department dept = departmentRepository.findById(deptId)
+                        .orElseThrow(() -> new ApiException(DEPARTMENT_NOT_FOUND));
+                employee.setDepartment(dept);
             }
-            manager = employeeRepository.findById(employeeRequest.getManagerId())
-                    .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND,
-                            "Manager not found with id: " + employeeRequest.getManagerId()));
-        } else {
-            manager = null;
+        }
+
+        if (updates.containsKey("teamId")) {
+            if (updates.get("teamId") == null) {
+                employee.setTeam(null);
+            } else {
+                Long teamId = jacksonConfiguration.objectMapper().convertValue(updates.get("teamId"), Long.class);
+                Team team = teamRepository.findById(teamId)
+                        .orElseThrow(() -> new ApiException(TEAM_NOT_FOUND));
+                employee.setTeam(team);
+            }
         }
 
 
-        Set<Expertise> expertises;
-        if (employeeRequest.getExpertises() != null && !employeeRequest.getExpertises().isEmpty()) {
-            expertises = employeeRequest.getExpertises()
-                    .stream()
-                    .map(name -> expertiseRepository.findByName(name)
-                            .orElseThrow(() -> new ApiException(
-                                    ApiError.EXPERTISE_NOT_FOUND,
-                                    "Expertise not found with name: " + name
-                            )))
-                    .collect(Collectors.toSet());
-        } else {
-            expertises = null;
+        if (updates.containsKey("managerId")) {
+            if (updates.get("managerId") == null) {
+                employee.setManager(null);
+            } else {
+                Long managerId = jacksonConfiguration.objectMapper().convertValue(updates.get("managerId"), Long.class);
+                if (managerId.equals(id)) throw new ApiException(INVALID_MANAGER);
+                Employee manager = employeeRepository.findById(managerId)
+                        .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND));
+                employee.setManager(manager);
+            }
         }
 
-        UpdateEmployeeWorkDetail workDetail = UpdateEmployeeWorkDetail.builder()
-                .manager(manager)
-                .department(department)
-                .team(team)
-                .expertises(expertises)
-                .build();
-        Employee updateEmployee = updateEmployeeField(employee, employeeRequest, workDetail);
-        Employee saveUpdatedEmployee = employeeRepository.save(updateEmployee);
-        return EmployeeMapper.toResponse(saveUpdatedEmployee);
+        if (updates.containsKey("name")) {
+            String newName = (String) updates.get("name");
+            if (newName != null) {
+                employee.setName(newName);
+            }
+        }
+
+        if (updates.containsKey("grossSalary")) {
+            BigDecimal salary = jacksonConfiguration.objectMapper().convertValue(updates.get("grossSalary"), BigDecimal.class);
+            employee.setGrossSalary(salary);
+        }
+
+        if (updates.containsKey("gender")) {
+            Gender gender = jacksonConfiguration.objectMapper().convertValue(updates.get("gender"), Gender.class);
+            employee.setGender(gender);
+        }
+
+        if (updates.containsKey("birthDate")) {
+            LocalDate date = jacksonConfiguration.objectMapper().convertValue(updates.get("birthDate"), LocalDate.class);
+            employee.setBirthDate(date);
+        }
+        if (updates.containsKey("graduationDate")) {
+            LocalDate date = jacksonConfiguration.objectMapper().convertValue(updates.get("graduationDate"), LocalDate.class);
+            employee.setGraduationDate(date);
+        }
+
+        if (updates.containsKey("expertises")) {
+            if (updates.get("expertises") == null) {
+                employee.setExpertises(null);
+            } else {
+                Set<String> names = jacksonConfiguration.objectMapper().convertValue(updates.get("expertises"), new TypeReference<>() {
+                });
+                Set<Expertise> expertises = names.stream()
+                        .map(name -> expertiseRepository.findByName(name).orElseThrow())
+                        .collect(Collectors.toSet());
+                employee.setExpertises(expertises);
+            }
+        }
+
+        return EmployeeMapper.toResponse(employeeRepository.save(employee));
     }
 
-    private Employee updateEmployeeField(Employee employee, UpdateEmployeeRequest request, UpdateEmployeeWorkDetail workDetail) {
-        return Employee.builder()
-                .id(employee.getId())
-                .name(request.getName() != null ? request.getName() : employee.getName())
-                .birthDate(request.getBirthDate() != null ? request.getBirthDate() : employee.getBirthDate())
-                .graduationDate(request.getGraduationDate() != null ? request.getGraduationDate() : employee.getGraduationDate())
-                .gender(request.getGender() != null ? request.getGender() : employee.getGender())
-                .grossSalary(request.getGrossSalary() != null ? request.getGrossSalary() : employee.getGrossSalary())
-                .manager(workDetail.getManager() != null ? workDetail.getManager() : employee.getManager())
-                .department(workDetail.getDepartment() != null ? workDetail.getDepartment() : employee.getDepartment())
-                .team(workDetail.getTeam() != null ? workDetail.getTeam() : employee.getTeam())
-                .expertises(workDetail.getExpertises() != null ? workDetail.getExpertises() : employee.getExpertises())
-                .build();
-
-    }
 
 }

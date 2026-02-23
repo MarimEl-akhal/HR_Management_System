@@ -1,8 +1,8 @@
 package com.example.hrm_system.integration;
 
+import com.example.hrm_system.configuration.JacksonConfiguration;
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
-import com.example.hrm_system.dto.UpdateEmployeeRequest;
 import com.example.hrm_system.entity.Employee;
 import com.example.hrm_system.entity.Expertise;
 import com.example.hrm_system.enums.Gender;
@@ -25,10 +25,11 @@ import org.springframework.test.context.transaction.TransactionalTestExecutionLi
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
-import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -64,10 +65,15 @@ public class EmployeeControllerTest {
     private static final Long EXIST_EMPLOYEE2_ID = 2L;
     private static final Long EXIST_EMPLOYEE3_ID = 3L;
     private static final Long EXIST_EMPLOYEE4_ID = 4L;
+
+
+    private static final String NAME = "name", BIRTH_DATE = "birthDate", GENDER = "gender", GRADUATION_DATE = "graduationDate", GROSS_SALARY = "grossSalary", EXPERTISES = "expertises", DEPARTMENT_ID = "departmentId", MANAGER_ID = "managerId", TEAM_ID = "teamId";
+
+
     @Autowired
     private MockMvc mockMvc;
     @Autowired
-    private ObjectMapper objectMapper;
+    private JacksonConfiguration jacksonConfiguration;
     @Autowired
     private EmployeeRepository employeeRepository;
     @Autowired
@@ -99,10 +105,10 @@ public class EmployeeControllerTest {
 
         MvcResult result = mockMvc.perform(post("/api/employees")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                        .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isCreated())
                 .andReturn();
-        EmployeeResponse employeeResponse = objectMapper.readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
+        EmployeeResponse employeeResponse = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
         Employee employee = employeeRepository.findById(employeeResponse.getId()).get();
 
         assertNotNull(employee);
@@ -142,12 +148,12 @@ public class EmployeeControllerTest {
                 .build();
         MvcResult result = mockMvc.perform(post("/api/employees")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                        .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isCreated())
                 .andReturn();
         long countAfter = employeeRepository.count();
 
-        EmployeeResponse employeeResponse = objectMapper.readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
+        EmployeeResponse employeeResponse = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
 
         assertEquals(countBefore + 1, countAfter);
 
@@ -186,7 +192,7 @@ public class EmployeeControllerTest {
 
         mockMvc.perform(post("/api/employees")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                        .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(INVALID_GROSS_SALARY.getDefaultMessage()))).andReturn();
@@ -214,7 +220,7 @@ public class EmployeeControllerTest {
                 .build();
         mockMvc.perform(post("/api/employees")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                        .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(INVALID_DATES.getDefaultMessage())));
@@ -242,7 +248,7 @@ public class EmployeeControllerTest {
 
         mockMvc.perform(post("/api/employees")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                        .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(MANAGER_NOT_FOUND.getDefaultMessage() + employeeRequest.getManagerId())));
@@ -271,7 +277,7 @@ public class EmployeeControllerTest {
                 .build();
         mockMvc.perform(post("/api/employees")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                        .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(DEPARTMENT_NOT_FOUND.getDefaultMessage() + employeeRequest.getDepartmentId())));
@@ -300,7 +306,7 @@ public class EmployeeControllerTest {
 
         mockMvc.perform(post("/api/employees")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                        .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(TEAM_NOT_FOUND.getDefaultMessage() + employeeRequest.getTeamId())));
@@ -329,7 +335,7 @@ public class EmployeeControllerTest {
         employeeRequest.setExpertises(NOT_FOUND_EXPERTISES);
         mockMvc.perform(post("/api/employees")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                        .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(EXPERTISE_NOT_FOUND.getDefaultMessage())));
@@ -344,12 +350,12 @@ public class EmployeeControllerTest {
         final String EXIST_EMPLOYEE_NAME = "Marim Mohamed";
         final LocalDate EXIST_EMPLOYEE_BIRTH_DATE = LocalDate.of(1975, 1, 1);
         final LocalDate EXIST_EMPLOYEE_GRAD_DATE = LocalDate.of(2000, 1, 1);
-        final BigDecimal EXIST_EMPLOYEE_GROSS_SALARY = BigDecimal.valueOf(100000.00);
+        final BigDecimal EXIST_EMPLOYEE_GROSS_SALARY = new BigDecimal("100000.00");
 
         MvcResult result = mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID))
                 .andExpect(status().isOk())
                 .andReturn();
-        EmployeeResponse employeeResponse = objectMapper
+        EmployeeResponse employeeResponse = jacksonConfiguration.objectMapper()
                 .readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
 
         Employee employee = employeeRepository.findById(employeeResponse.getId()).get();
@@ -443,48 +449,48 @@ public class EmployeeControllerTest {
         final Set<String> UPDATE_EXPERTISES = Set.of("Java");
 
 
-        UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
-                .name(UPDATE_NAME)
-                .birthDate(UPDATE_BIRTH_DATE)
-                .graduationDate(UPDATE_GRAD_DATE)
-                .gender(MALE_EMPLOYEE)
-                .grossSalary(UPDATE_GROSS_SALARY)
-                .managerId(EXIST_MANAGER_ID)
-                .teamId(EXIST_TEAM1_ID)
-                .departmentId(EXIST_DEPARTMENT2_ID)
-                .expertises(UPDATE_EXPERTISES)
-                .build();
+        Map<String, Object> employeeRequest = new HashMap<>();
+        employeeRequest.put(NAME, UPDATE_NAME);
+        employeeRequest.put(BIRTH_DATE, UPDATE_BIRTH_DATE);
+        employeeRequest.put(GRADUATION_DATE, UPDATE_GRAD_DATE);
+        employeeRequest.put(GENDER, MALE_EMPLOYEE);
+        employeeRequest.put(GROSS_SALARY, UPDATE_GROSS_SALARY);
+        employeeRequest.put(EXPERTISES, UPDATE_EXPERTISES);
+        employeeRequest.put(MANAGER_ID, EXIST_MANAGER_ID);
+        employeeRequest.put(DEPARTMENT_ID, EXIST_DEPARTMENT2_ID);
+        employeeRequest.put(TEAM_ID, EXIST_TEAM1_ID);
 
         MvcResult result = mockMvc.perform(patch("/api/employees/" + EXIST_EMPLOYEE3_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                        .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        EmployeeResponse employeeResponse = objectMapper.readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
+        EmployeeResponse employeeResponse = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
         assertNotNull(employeeResponse);
         assertNotNull(employeeResponse.getId());
-
         Employee updatedEmployee = employeeRepository.findAll()
                 .stream()
                 .filter(employee -> employee.getId().equals(employeeResponse.getId())
-                        && employee.getName().equals(employeeRequest.getName())
-                        && employee.getBirthDate().equals(employeeRequest.getBirthDate()))
+                        && employee.getName().equals(employeeRequest.get(NAME))
+                        && employee.getBirthDate().equals(employeeRequest.get(BIRTH_DATE)))
                 .findFirst()
                 .orElseThrow();
 
-
+        assertNotNull(updatedEmployee);
+        assertEquals(employeeResponse.getId(), updatedEmployee.getId());
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
         assertEquals(employeeResponse.getId(), updatedEmployee.getId());
-        assertEquals(employeeRequest.getName(), updatedEmployee.getName());
-        assertEquals(employeeRequest.getGrossSalary(), updatedEmployee.getGrossSalary());
-        assertEquals(employeeRequest.getGender(), updatedEmployee.getGender());
-        assertEquals(employeeRequest.getBirthDate(), updatedEmployee.getBirthDate());
-        assertEquals(employeeRequest.getGraduationDate(), updatedEmployee.getGraduationDate());
-        assertEquals(employeeRequest.getManagerId(), updatedEmployee.getManager().getId());
-        assertEquals(employeeRequest.getTeamId(), updatedEmployee.getTeam().getId());
-        assertEquals(employeeRequest.getDepartmentId(), updatedEmployee.getDepartment().getId());
+        assertEquals(employeeRequest.get(NAME), updatedEmployee.getName());
+        assertEquals(employeeRequest.get(GROSS_SALARY), updatedEmployee.getGrossSalary());
+        assertEquals(employeeRequest.get(GENDER), updatedEmployee.getGender());
+        assertEquals(employeeRequest.get(BIRTH_DATE), updatedEmployee.getBirthDate());
+        assertEquals(employeeRequest.get(GRADUATION_DATE), updatedEmployee.getGraduationDate());
+        assertEquals(employeeRequest.get(MANAGER_ID), updatedEmployee.getManager().getId());
+        assertEquals(employeeRequest.get(TEAM_ID), updatedEmployee.getTeam().getId());
+        assertEquals(employeeRequest.get(DEPARTMENT_ID), updatedEmployee.getDepartment().getId());
+        assertEquals(employeeRequest.get(EXPERTISES), updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()));
         assertTrue(updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).contains("Java"));
     }
 
@@ -494,26 +500,26 @@ public class EmployeeControllerTest {
     public void testModifyEmployee_whenEnterValidExpertises_shouldUpdateExpertise() throws Exception {
         final Set<String> UPDATE_EXPERTISES = Set.of("Java", "Spring Boot");
 
-        UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
-                .expertises(UPDATE_EXPERTISES)
-                .build();
+        Map<String, Object> employeeRequest = new HashMap<>();
+        employeeRequest.put(EXPERTISES, UPDATE_EXPERTISES);
+
         Employee employeeBeforeUpdate = employeeRepository.findById(EXIST_EMPLOYEE3_ID)
                 .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND));
 
         MvcResult result = mockMvc.perform(patch("/api/employees/" + EXIST_EMPLOYEE3_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                        .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        EmployeeResponse employeeResponse = objectMapper.readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
+        EmployeeResponse employeeResponse = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
 
-        assertEquals(employeeResponse.getExpertises(), employeeRequest.getExpertises());
+        assertEquals(employeeResponse.getExpertises(), employeeRequest.get(EXPERTISES));
 
         Employee updatedEmployee = employeeRepository.findAll()
                 .stream()
                 .filter(employee -> employee.getId().equals(employeeResponse.getId())
-                        && employee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).equals(employeeRequest.getExpertises()))
+                        && employee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).equals(employeeRequest.get(EXPERTISES)))
                 .findFirst()
                 .orElseThrow();
 
@@ -531,48 +537,47 @@ public class EmployeeControllerTest {
         final LocalDate UPDATE_BIRTH_DATE = LocalDate.of(2002, 5, 1);
         final LocalDate UPDATE_GRADUATION_DATE = LocalDate.of(2024, 6, 15);
 
-        UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
-                .birthDate(UPDATE_BIRTH_DATE)
-                .graduationDate(UPDATE_GRADUATION_DATE)
-                .build();
+        Map<String, Object> employeeRequest = new HashMap<>();
+        employeeRequest.put(BIRTH_DATE, UPDATE_BIRTH_DATE);
+        employeeRequest.put(GRADUATION_DATE, UPDATE_GRADUATION_DATE);
 
         Employee employeeBeforeUpdate = employeeRepository.findById(EXIST_EMPLOYEE2_ID)
                 .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND));
 
         MvcResult result = mockMvc.perform(patch("/api/employees/" + EXIST_EMPLOYEE2_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                        .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        EmployeeResponse employeeResponse = objectMapper.readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
+        EmployeeResponse employeeResponse = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
 
 
         Employee updatedEmployee = employeeRepository.findAll()
                 .stream()
                 .filter(employee -> employee.getId().equals(employeeResponse.getId())
-                        && employee.getGraduationDate().equals(employeeBeforeUpdate.getGraduationDate())
-                        && employee.getBirthDate().equals(employeeRequest.getBirthDate()))
+                        && employee.getGraduationDate().equals(employeeRequest.get(GRADUATION_DATE))
+                        && employee.getBirthDate().equals(employeeRequest.get(BIRTH_DATE)))
                 .findFirst()
                 .orElseThrow();
 
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
         assertEquals(employeeBeforeUpdate.getId(), updatedEmployee.getId());
-        assertEquals(employeeBeforeUpdate.getBirthDate(), updatedEmployee.getBirthDate());
-        assertEquals(employeeBeforeUpdate.getGraduationDate(), updatedEmployee.getGraduationDate());
+        assertEquals(employeeRequest.get(BIRTH_DATE), updatedEmployee.getBirthDate());
+        assertEquals(employeeRequest.get(GRADUATION_DATE), updatedEmployee.getGraduationDate());
     }
 
     @Test
     @Transactional
     @DatabaseSetup("/dataset/modify-employee.xml")
     public void testModifyEmployee_whenDepartmentIsInvalid_shouldReturnNotFound() throws Exception {
-        UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
-                .departmentId(NO_EXIST_DEPARTMENT_ID)
-                .build();
+        Map<String, Object> employeeRequest = new HashMap<>();
+        employeeRequest.put(DEPARTMENT_ID, NO_EXIST_DEPARTMENT_ID);
+
         mockMvc.perform(patch("/api/employees/" + EXIST_EMPLOYEE3_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                        .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(DEPARTMENT_NOT_FOUND.getDefaultMessage())));
@@ -582,12 +587,11 @@ public class EmployeeControllerTest {
     @Transactional
     @DatabaseSetup("/dataset/modify-employee.xml")
     public void testModifyEmployee_whenEmployeeAssignedAsOwnManager_shouldReturnBadRequest() throws Exception {
-        UpdateEmployeeRequest request = UpdateEmployeeRequest.builder()
-                .managerId(EXIST_MANAGER_ID)
-                .build();
+        Map<String, Object> employeeRequest = new HashMap<>();
+        employeeRequest.put(MANAGER_ID, EXIST_MANAGER_ID);
         mockMvc.perform(patch("/api/employees/" + EXIST_MANAGER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request)))
+                        .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isBadRequest())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(INVALID_MANAGER.getDefaultMessage())));
@@ -605,20 +609,19 @@ public class EmployeeControllerTest {
         final Set<String> UPDATE_EXPERTISES = Set.of("Java");
 
 
-        UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
-                .name(UPDATE_NAME)
-                .birthDate(UPDATE_BIRTH_DATE)
-                .graduationDate(UPDATE_GRAD_DATE)
-                .gender(FEMALE_EMPLOYEE)
-                .grossSalary(UPDATE_GROSS_SALARY)
-                .managerId(EXIST_MANAGER_ID)
-                .teamId(EXIST_TEAM1_ID)
-                .departmentId(EXIST_DEPARTMENT2_ID)
-                .expertises(UPDATE_EXPERTISES)
-                .build();
+        Map<String, Object> employeeRequest = new HashMap<>();
+        employeeRequest.put(NAME, UPDATE_NAME);
+        employeeRequest.put(BIRTH_DATE, UPDATE_BIRTH_DATE);
+        employeeRequest.put(GRADUATION_DATE, UPDATE_GRAD_DATE);
+        employeeRequest.put(GENDER, FEMALE_EMPLOYEE);
+        employeeRequest.put(GROSS_SALARY, UPDATE_GROSS_SALARY);
+        employeeRequest.put(MANAGER_ID, EXIST_MANAGER_ID);
+        employeeRequest.put(TEAM_ID, EXIST_TEAM1_ID);
+        employeeRequest.put(DEPARTMENT_ID, EXIST_DEPARTMENT2_ID);
+        employeeRequest.put(EXPERTISES, UPDATE_EXPERTISES);
 
         mockMvc.perform(patch("/api/employees/" + NO_EXIST_EMPLOYEE_ID)
-                        .contentType(MediaType.APPLICATION_JSON).content(objectMapper.writeValueAsString(employeeRequest)))
+                        .contentType(MediaType.APPLICATION_JSON).content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
@@ -629,24 +632,24 @@ public class EmployeeControllerTest {
     @DatabaseSetup("/dataset/modify-employee.xml")
     public void testModifyEmployee_whenSetFieldsNull_shouldReturnOk() throws Exception {
 
-        UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
-                .name(null)
-                .birthDate(null)
-                .graduationDate(null)
-                .gender(null)
-                .grossSalary(null)
-                .departmentId(null)
-                .managerId(null)
-                .teamId(null)
-                .build();
+        Map<String, Object> employeeRequest = new HashMap<>();
+        employeeRequest.put(NAME, null);
+        employeeRequest.put(BIRTH_DATE, null);
+        employeeRequest.put(GRADUATION_DATE, null);
+        employeeRequest.put(GROSS_SALARY, null);
+        employeeRequest.put(GENDER, null);
+        employeeRequest.put(MANAGER_ID, null);
+        employeeRequest.put(DEPARTMENT_ID, null);
+        employeeRequest.put(TEAM_ID, null);
+        employeeRequest.put(EXPERTISES, null);
 
         MvcResult result = mockMvc.perform(patch("/api/employees/" + EXIST_EMPLOYEE2_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                        .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        EmployeeResponse employeeResponse = objectMapper.readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
+        EmployeeResponse employeeResponse = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
         assertNotNull(employeeResponse);
         assertNotNull(employeeResponse.getId());
 
@@ -660,8 +663,15 @@ public class EmployeeControllerTest {
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
         assertEquals(employeeResponse.getId(), updatedEmployee.getId());
-        assertEquals(employeeRequest.getBirthDate(), updatedEmployee.getBirthDate());
-        assertEquals(employeeRequest.getGraduationDate(), updatedEmployee.getGraduationDate());
+        assertNotNull(updatedEmployee.getName());
+        assertNull(updatedEmployee.getBirthDate());
+        assertNull(updatedEmployee.getGraduationDate());
+        assertNull(updatedEmployee.getGrossSalary());
+        assertNull(updatedEmployee.getGender());
+        assertNull(updatedEmployee.getManager());
+        assertNull(updatedEmployee.getDepartment());
+        assertNull(updatedEmployee.getTeam());
+        assertNull(updatedEmployee.getExpertises());
     }
 
     @Test
@@ -669,17 +679,16 @@ public class EmployeeControllerTest {
     @DatabaseSetup("/dataset/modify-employee.xml")
     public void testModifyEmployee_whenNameNullable_shouldReturnOkIgnoreChanges() throws Exception {
 
-        UpdateEmployeeRequest employeeRequest = UpdateEmployeeRequest.builder()
-                .name(null)
-                .build();
+        Map<String, Object> employeeRequest = new HashMap<>();
+        employeeRequest.put(NAME, null);
 
         MvcResult result = mockMvc.perform(patch("/api/employees/" + EXIST_EMPLOYEE2_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(employeeRequest)))
+                        .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        EmployeeResponse employeeResponse = objectMapper.readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
+        EmployeeResponse employeeResponse = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
         assertNotNull(employeeResponse);
         assertNotNull(employeeResponse.getId());
         Employee updatedEmployee = employeeRepository.findById(EXIST_EMPLOYEE2_ID).get();

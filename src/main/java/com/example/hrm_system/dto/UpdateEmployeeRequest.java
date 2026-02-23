@@ -1,6 +1,7 @@
 package com.example.hrm_system.dto;
 
 import com.example.hrm_system.enums.Gender;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
@@ -17,6 +18,7 @@ import java.util.Set;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UpdateEmployeeRequest {
     @Size(min = 3, message = "Name must be at least 3 characters long")
     private String name;
@@ -39,4 +41,3 @@ public class UpdateEmployeeRequest {
 
     private Set<String> expertises;
 }
-
