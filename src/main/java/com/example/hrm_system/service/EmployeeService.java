@@ -203,10 +203,16 @@ public class EmployeeService {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND, "Employee not found with id: " + id));
 
+        if (employee.getGrossSalary().compareTo(BigDecimal.ZERO) < 0) {
+            throw new ApiException(ApiError.INVALID_GROSS_SALARY);
+        }
+
         /* net = grossSalary - (grossSalary*TAX_RATIO) - INSURANCE_AMOUNT
                 = grossSalary(1-TAX_RATIO)-INSURANCE_AMOUNT
               = grossSalary(TAX_REMAINDER)-INSURANCE_AMOUNT */
         BigDecimal netSalary = employee.getGrossSalary().multiply(TAX_REMAINDER).subtract(INSURANCE_AMOUNT);
+
+
         return EmployeeSalary.builder()
                 .grossSalary(employee.getGrossSalary())
                 .netSalary(netSalary)
