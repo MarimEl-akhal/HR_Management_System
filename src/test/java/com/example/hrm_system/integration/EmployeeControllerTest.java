@@ -35,7 +35,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.example.hrm_system.enums.ApiError.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -723,6 +723,17 @@ public class EmployeeControllerTest {
         EmployeeSalary employeeSalaryResponse = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), EmployeeSalary.class);
         assertThat(employeeSalaryResponse.getGrossSalary().compareTo(grossSalary));
         assertThat(employeeSalaryResponse.getNetSalary().compareTo(netSalary));
+
+    }
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employee-salary.xml")
+    public void testGetEmployeeSalary_whenNotFoundEmployee_shouldReturnNotFound() throws Exception {
+        mockMvc.perform(get("/api/employees/" + NO_EXIST_EMPLOYEE_ID + "/salary"))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
 
     }
 }
