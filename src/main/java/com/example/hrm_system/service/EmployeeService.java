@@ -212,6 +212,9 @@ public class EmployeeService {
               = grossSalary(TAX_REMAINDER)-INSURANCE_AMOUNT */
         BigDecimal netSalary = employee.getGrossSalary().multiply(TAX_REMAINDER).subtract(INSURANCE_AMOUNT);
 
+        if (netSalary.compareTo(BigDecimal.ZERO) < 0) {
+            throw new ApiException(NEGATIVE_SALARY);
+        }
 
         return EmployeeSalary.builder()
                 .grossSalary(employee.getGrossSalary())
