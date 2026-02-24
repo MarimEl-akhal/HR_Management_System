@@ -6,7 +6,6 @@ import com.example.hrm_system.dto.EmployeeResponse;
 import com.example.hrm_system.dto.EmployeeSalary;
 import com.example.hrm_system.entity.Employee;
 import com.example.hrm_system.entity.Expertise;
-import com.example.hrm_system.enums.ApiError;
 import com.example.hrm_system.enums.Gender;
 import com.example.hrm_system.exception.ApiException;
 import com.example.hrm_system.repository.EmployeeRepository;

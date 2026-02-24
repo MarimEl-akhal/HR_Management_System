@@ -15,7 +15,7 @@ public enum ApiError {
     EXPERTISE_NOT_FOUND(HttpStatus.NOT_FOUND, "Expertise not found with name: "),
     INVALID_EMPLOYEE_DELETION(HttpStatus.CONFLICT, "Can't remove  manager (has no manager)"), // Can't remove manager ->  has no  manager(root) ,has subordinates
     MISSING_NAME_FIELD_IN_JSON_BODY(HttpStatus.BAD_REQUEST, "name: Name is required"),
-    NEGATIVE_SALARY(HttpStatus.BAD_REQUEST,"Salary must be positive"),
+    NEGATIVE_SALARY(HttpStatus.BAD_REQUEST, "Salary must be positive"),
     INVALID_NAME(HttpStatus.BAD_REQUEST, "Name must not be null or empty");
     private final HttpStatus httpStatus;
     private final String defaultMessage;
