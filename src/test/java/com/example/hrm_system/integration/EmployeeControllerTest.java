@@ -736,4 +736,16 @@ public class EmployeeControllerTest {
                         .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
 
     }
+
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employee-salary.xml")
+    public void testGetEmployeeSalary_whenNegativeSalary_shouldReturnIsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/employees/" + EXIST_EMPLOYEE3_ID + "/salary"))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(INVALID_GROSS_SALARY.getDefaultMessage())));
+
+    }
 }
