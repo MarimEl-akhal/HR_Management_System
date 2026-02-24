@@ -199,8 +199,9 @@ public class EmployeeService {
         return EmployeeMapper.toResponse(employeeRepository.save(employee));
     }
 
-    public EmployeeSalary getEmployeeSalaryInfo(Long id){
-        Employee employee = employeeRepository.findById(id).orElseThrow();
+    public EmployeeSalary getEmployeeSalaryInfo(Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND, "Employee not found with id: " + id));
 
         /* net = grossSalary - (grossSalary*TAX_RATIO) - INSURANCE_AMOUNT
                 = grossSalary(1-TAX_RATIO)-INSURANCE_AMOUNT
