@@ -3,6 +3,7 @@ package com.example.hrm_system.service;
 import com.example.hrm_system.configuration.JacksonConfiguration;
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
+import com.example.hrm_system.dto.EmployeeSalary;
 import com.example.hrm_system.entity.Department;
 import com.example.hrm_system.entity.Employee;
 import com.example.hrm_system.entity.Expertise;
@@ -30,6 +31,11 @@ import static com.example.hrm_system.enums.ApiError.*;
 @Service
 @AllArgsConstructor
 public class EmployeeService {
+
+    private static final BigDecimal TAX_RATIO = BigDecimal.valueOf(0.15);
+    private static final BigDecimal TAX_REMAINDER = BigDecimal.ONE.subtract(TAX_RATIO);
+    private static final BigDecimal INSURANCE_AMOUNT = BigDecimal.valueOf(500);
+
 
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
@@ -191,6 +197,19 @@ public class EmployeeService {
         }
 
         return EmployeeMapper.toResponse(employeeRepository.save(employee));
+    }
+
+    public EmployeeSalary getEmployeeSalaryInfo(Long id){
+        Employee employee = employeeRepository.findById(id).orElseThrow();
+
+        /* net = grossSalary - (grossSalary*TAX_RATIO) - INSURANCE_AMOUNT
+                = grossSalary(1-TAX_RATIO)-INSURANCE_AMOUNT
+              = grossSalary(TAX_REMAINDER)-INSURANCE_AMOUNT */
+        BigDecimal netSalary = employee.getGrossSalary().multiply(TAX_REMAINDER).subtract(INSURANCE_AMOUNT);
+        return EmployeeSalary.builder()
+                .grossSalary(employee.getGrossSalary())
+                .netSalary(netSalary)
+                .build();
     }
 
 

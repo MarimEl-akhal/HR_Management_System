@@ -2,6 +2,8 @@ package com.example.hrm_system.controller;
 
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
+import com.example.hrm_system.dto.EmployeeSalary;
+import com.example.hrm_system.entity.Employee;
 import com.example.hrm_system.service.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -42,4 +44,9 @@ public class EmployeeController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @GetMapping("/{id}/salary")
+    public ResponseEntity<EmployeeSalary> getEmployeeSalaryInfo(@PathVariable Long id){
+        EmployeeSalary employeeSalaryResponse = employeeService.getEmployeeSalaryInfo(id);
+        return ResponseEntity.status(HttpStatus.OK).body(employeeSalaryResponse);
+    }
 }

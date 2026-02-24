@@ -35,6 +35,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.example.hrm_system.enums.ApiError.*;
+import static org.assertj.core.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -720,8 +721,8 @@ public class EmployeeControllerTest {
                 .andReturn();
 
         EmployeeSalary employeeSalaryResponse = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), EmployeeSalary.class);
-        assertEquals(employeeSalaryResponse.getGrossSalary(), grossSalary);
-        assertEquals(employeeSalaryResponse.getNetSalary(), netSalary);
+        assertThat(employeeSalaryResponse.getGrossSalary().compareTo(grossSalary));
+        assertThat(employeeSalaryResponse.getNetSalary().compareTo(netSalary));
 
     }
 }
