@@ -1,0 +1,42 @@
+<dataset>
+
+    <departments department_id="1" name="Human Resources"/>
+    <departments department_id="2" name="Engineering"/>
+
+
+
+    <teams team_id="1" name="Team 1"/>
+    <teams team_id="2" name="Team 2"/>
+
+
+
+    <employees employee_id="1"
+               name="Malak Ziad"
+               birth_date="2003-03-14"
+               graduation_date="2025-06-10"
+               gender="FEMALE"
+               gross_salary="200000"
+    />
+
+    <employees employee_id="2"
+               name="Ahmed"
+               birth_date="1980-08-05"
+               graduation_date="2014-05-10"
+               gender="MALE"
+               gross_salary="15000"
+               manager_id="1"
+               department_id="2"
+               team_id="2"/>
+
+    <employees employee_id="3"
+               name="Asmaa"
+               birth_date="1977-09-05"
+               graduation_date="2000-06-27"
+               gender="FEMALE"
+               gross_salary="90000"
+               manager_id="2"
+               department_id="2"
+               team_id="2"/>
+
+
+</dataset>

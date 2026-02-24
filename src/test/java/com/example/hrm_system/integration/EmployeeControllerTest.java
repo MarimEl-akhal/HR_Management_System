@@ -3,6 +3,7 @@ package com.example.hrm_system.integration;
 import com.example.hrm_system.configuration.JacksonConfiguration;
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
+import com.example.hrm_system.dto.EmployeeSalary;
 import com.example.hrm_system.entity.Employee;
 import com.example.hrm_system.entity.Expertise;
 import com.example.hrm_system.enums.Gender;
@@ -65,6 +66,10 @@ public class EmployeeControllerTest {
     private static final Long EXIST_EMPLOYEE2_ID = 2L;
     private static final Long EXIST_EMPLOYEE3_ID = 3L;
     private static final Long EXIST_EMPLOYEE4_ID = 4L;
+
+    private static final BigDecimal TAX_RATIO = BigDecimal.valueOf(0.15);
+    private static final BigDecimal TAX_REMAINDER = BigDecimal.ONE.subtract(TAX_RATIO);
+    private static final BigDecimal INSURANCE_AMOUNT = BigDecimal.valueOf(500);
 
 
     private static final String NAME = "name", BIRTH_DATE = "birthDate", GENDER = "gender", GRADUATION_DATE = "graduationDate", GROSS_SALARY = "grossSalary", EXPERTISES = "expertises", DEPARTMENT_ID = "departmentId", MANAGER_ID = "managerId", TEAM_ID = "teamId";
@@ -697,5 +702,26 @@ public class EmployeeControllerTest {
         assertNotNull(updatedEmployee.getId());
         assertEquals(employeeResponse.getId(), updatedEmployee.getId());
         assertEquals(employeeResponse.getName(), updatedEmployee.getName());
+    }
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employee-salary.xml")
+    public void testGetEmployeeSalary_whenEmployeeExistsAndValidGrossSalary_shouldReturnCorrectNetSalary() throws Exception {
+        final BigDecimal grossSalary = BigDecimal.valueOf(15000);
+
+        /* net = grossSalary - (grossSalary*TAX_RATIO) - INSURANCE_AMOUNT
+                = grossSalary(1-TAX_RATIO)-INSURANCE_AMOUNT
+              = grossSalary(TAX_REMAINDER)-INSURANCE_AMOUNT */
+        BigDecimal netSalary = grossSalary.multiply(TAX_REMAINDER).subtract(INSURANCE_AMOUNT);
+
+        MvcResult result = mockMvc.perform(get("/api/employees/" + EXIST_EMPLOYEE2_ID + "/salary"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        EmployeeSalary employeeSalaryResponse = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), EmployeeSalary.class);
+        assertEquals(employeeSalaryResponse.getGrossSalary(), grossSalary);
+        assertEquals(employeeSalaryResponse.getNetSalary(), netSalary);
+
     }
 }
