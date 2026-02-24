@@ -15,19 +15,18 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(ApiException.class)
-    public ResponseEntity<ApiErrorDto> handleApiException(ApiException ex){
+    public ResponseEntity<ApiErrorDto> handleApiException(ApiException ex) {
         ApiErrorDto error = new ApiErrorDto(ex.getApiError().getHttpStatus(), ex.getMessage());
 
         return new ResponseEntity<>(error, ex.getApiError().getHttpStatus());
     }
 
     @ExceptionHandler(Exception.class)
-    public final ResponseEntity<ApiErrorDto> handleAllExceptions(Exception ex){
-        ApiErrorDto error = new ApiErrorDto(HttpStatus.INTERNAL_SERVER_ERROR,ex.getMessage());
+    public final ResponseEntity<ApiErrorDto> handleAllExceptions(Exception ex) {
+        ApiErrorDto error = new ApiErrorDto(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
 
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-
 
 
     @Override

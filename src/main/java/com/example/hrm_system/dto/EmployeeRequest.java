@@ -11,6 +11,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -34,7 +35,7 @@ public class EmployeeRequest {
 
     @NotNull(message = "Gross salary is required")
     @Positive
-    private Double grossSalary;
+    private BigDecimal grossSalary;
 
     private Long managerId;
 

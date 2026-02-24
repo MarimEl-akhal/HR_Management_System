@@ -7,6 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Set;
 
@@ -20,7 +21,7 @@ public class EmployeeResponse {
     private LocalDate birthDate;
     private LocalDate graduationDate;
     private Gender gender;
-    private Double grossSalary;
+    private BigDecimal grossSalary;
     private Long managerId;
     private Long departmentId;
     private Long teamId;
