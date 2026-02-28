@@ -635,7 +635,7 @@ public class EmployeeControllerTest {
                 .teamId(JsonNullable.of(null))
                 .build();
 
-        MvcResult result = mockMvc.perform(patch("/api/employees/" + EXIST_EMPLOYEE2_ID)
+        mockMvc.perform(patch("/api/employees/" + EXIST_EMPLOYEE2_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isOk())
@@ -669,7 +669,7 @@ public class EmployeeControllerTest {
                 .name(JsonNullable.of(null))
                 .build();
 
-        MvcResult result = mockMvc.perform(patch("/api/employees/" + EXIST_EMPLOYEE2_ID)
+        mockMvc.perform(patch("/api/employees/" + EXIST_EMPLOYEE2_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isOk())
@@ -681,7 +681,7 @@ public class EmployeeControllerTest {
 
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
-        assertEquals(updatedEmployee.getId(),EXIST_EMPLOYEE2_ID);
+        assertEquals(updatedEmployee.getId(), EXIST_EMPLOYEE2_ID);
         assertThat(updatedEmployee.getName()).isNull();
     }
 }
