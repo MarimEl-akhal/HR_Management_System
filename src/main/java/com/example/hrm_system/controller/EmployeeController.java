@@ -2,14 +2,13 @@ package com.example.hrm_system.controller;
 
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
+import com.example.hrm_system.dto.UpdateEmployeeRequest;
 import com.example.hrm_system.service.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @AllArgsConstructor
@@ -37,9 +36,10 @@ public class EmployeeController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<EmployeeResponse> updateEmployee(@PathVariable Long id, @Valid @RequestBody Map<String, Object> mapRequest) {
-        EmployeeResponse response = employeeService.updateEmployee(id, mapRequest);
+    public ResponseEntity<EmployeeResponse> updateEmployee(@PathVariable Long id, @RequestBody UpdateEmployeeRequest employeeRequest) {
+        EmployeeResponse response = employeeService.updateEmployee(id, employeeRequest);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
+
 
 }
