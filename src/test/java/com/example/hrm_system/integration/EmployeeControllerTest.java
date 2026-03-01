@@ -257,7 +257,7 @@ public class EmployeeControllerTest {
                         .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(MANAGER_NOT_FOUND.getDefaultMessage() + employeeRequest.getManagerId())));
+                        .contains(MANAGER_NOT_FOUND.getDefaultMessage() + NO_EXIST_MANAGER_ID)));
 
     }
 
@@ -286,7 +286,7 @@ public class EmployeeControllerTest {
                         .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(DEPARTMENT_NOT_FOUND.getDefaultMessage() + employeeRequest.getDepartmentId())));
+                        .contains(DEPARTMENT_NOT_FOUND.getDefaultMessage() + NO_EXIST_DEPARTMENT_ID)));
     }
 
 
@@ -315,7 +315,7 @@ public class EmployeeControllerTest {
                         .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(TEAM_NOT_FOUND.getDefaultMessage() + employeeRequest.getTeamId())));
+                        .contains(TEAM_NOT_FOUND.getDefaultMessage() + NO_EXIST_TEAM_ID)));
     }
 
     @Test
@@ -358,17 +358,16 @@ public class EmployeeControllerTest {
         final LocalDate EXIST_EMPLOYEE_GRAD_DATE = LocalDate.of(2000, 1, 1);
         final BigDecimal EXIST_EMPLOYEE_GROSS_SALARY = new BigDecimal("100000.00");
 
-        MvcResult result = mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID))
+        mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID))
                 .andExpect(status().isOk())
                 .andReturn();
-        EmployeeResponse employeeResponse = jacksonConfiguration.objectMapper()
-                .readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
 
-        Employee employee = employeeRepository.findById(employeeResponse.getId()).get();
+        Employee employee = employeeRepository.findById(EXIST_MANAGER_ID).orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND,
+                EMPLOYEE_NOT_FOUND.getDefaultMessage() + EXIST_MANAGER_ID));
 
         assertNotNull(employee);
         assertNotNull(employee.getId());
-        assertEquals(employee.getId(), employeeResponse.getId());
+        assertEquals(employee.getId(), EXIST_MANAGER_ID);
         assertEquals(EXIST_EMPLOYEE_NAME, employee.getName());
         assertEquals(EXIST_EMPLOYEE_BIRTH_DATE, employee.getBirthDate());
         assertEquals(EXIST_EMPLOYEE_GRAD_DATE, employee.getGraduationDate());
@@ -385,7 +384,7 @@ public class EmployeeControllerTest {
         mockMvc.perform(get("/api/employees/" + NO_EXIST_EMPLOYEE_ID))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
+                        .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage() + NO_EXIST_EMPLOYEE_ID)));
     }
 
 
@@ -426,7 +425,7 @@ public class EmployeeControllerTest {
         mockMvc.perform(delete("/api/employees/" + NO_EXIST_EMPLOYEE_ID))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
+                        .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage() + NO_EXIST_EMPLOYEE_ID)));
     }
 
     //delete root manager (marim -> has no manger but has subordinates) -> conflict
@@ -477,7 +476,7 @@ public class EmployeeControllerTest {
         EmployeeResponse employeeResponse = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), EmployeeResponse.class);
 
         Employee updatedEmployee = employeeRepository.findById(EXIST_EMPLOYEE3_ID).orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND,
-                EMPLOYEE_NOT_FOUND.getDefaultMessage()));
+                EMPLOYEE_NOT_FOUND.getDefaultMessage() + EXIST_EMPLOYEE3_ID));
 
 
         assertNotNull(updatedEmployee);
@@ -513,7 +512,7 @@ public class EmployeeControllerTest {
                 .andReturn();
 
         Employee updatedEmployee = employeeRepository.findById(EXIST_EMPLOYEE3_ID).orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND,
-                EMPLOYEE_NOT_FOUND.getDefaultMessage()));
+                EMPLOYEE_NOT_FOUND.getDefaultMessage() + EXIST_EMPLOYEE3_ID));
 
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
@@ -543,7 +542,7 @@ public class EmployeeControllerTest {
 
 
         Employee updatedEmployee = employeeRepository.findById(EXIST_EMPLOYEE2_ID).orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND,
-                EMPLOYEE_NOT_FOUND.getDefaultMessage()));
+                EMPLOYEE_NOT_FOUND.getDefaultMessage() + EXIST_EMPLOYEE2_ID));
 
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
@@ -567,7 +566,7 @@ public class EmployeeControllerTest {
                         .content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(DEPARTMENT_NOT_FOUND.getDefaultMessage())));
+                        .contains(DEPARTMENT_NOT_FOUND.getDefaultMessage() + NO_EXIST_DEPARTMENT_ID)));
     }
 
     @Test
@@ -615,7 +614,7 @@ public class EmployeeControllerTest {
                         .contentType(MediaType.APPLICATION_JSON).content(jacksonConfiguration.objectMapper().writeValueAsString(employeeRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
-                        .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
+                        .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage() + NO_EXIST_EMPLOYEE_ID)));
     }
 
     @Test
@@ -643,7 +642,7 @@ public class EmployeeControllerTest {
 
 
         Employee updatedEmployee = employeeRepository.findById(EXIST_EMPLOYEE2_ID).orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND,
-                EMPLOYEE_NOT_FOUND.getDefaultMessage()));
+                EMPLOYEE_NOT_FOUND.getDefaultMessage() + EXIST_EMPLOYEE2_ID));
 
 
         assertNotNull(updatedEmployee);
@@ -676,7 +675,7 @@ public class EmployeeControllerTest {
                 .andReturn();
 
         Employee updatedEmployee = employeeRepository.findById(EXIST_EMPLOYEE2_ID).orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND,
-                EMPLOYEE_NOT_FOUND.getDefaultMessage()));
+                EMPLOYEE_NOT_FOUND.getDefaultMessage() + EXIST_EMPLOYEE2_ID));
 
 
         assertNotNull(updatedEmployee);
