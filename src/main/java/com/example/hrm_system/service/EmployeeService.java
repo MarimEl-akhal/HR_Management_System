@@ -115,8 +115,6 @@ public class EmployeeService {
         if (employeeRequest.getName() != null) {
             if (employeeRequest.getName().isPresent()) {
                 employee.setName(employeeRequest.getName().get());
-            } else {
-                employee.setName(null);
             }
         }
 
@@ -124,32 +122,24 @@ public class EmployeeService {
         if (employeeRequest.getBirthDate() != null) {
             if (employeeRequest.getBirthDate().isPresent()) {
                 employee.setBirthDate(employeeRequest.getBirthDate().get());
-            } else {
-                employee.setBirthDate(null);
             }
         }
 
         if (employeeRequest.getGraduationDate() != null) {
             if (employeeRequest.getGraduationDate().isPresent()) {
                 employee.setGraduationDate(employeeRequest.getGraduationDate().get());
-            } else {
-                employee.setGraduationDate(null);
             }
         }
 
         if (employeeRequest.getGender() != null) {
             if (employeeRequest.getGender().isPresent()) {
                 employee.setGender(employeeRequest.getGender().get());
-            } else {
-                employee.setGender(null);
             }
         }
 
         if (employeeRequest.getGrossSalary() != null) {
             if (employeeRequest.getGrossSalary().isPresent()) {
                 employee.setGrossSalary(employeeRequest.getGrossSalary().get());
-            } else {
-                employee.setGrossSalary(null);
             }
         }
 // Manager ID
@@ -165,8 +155,6 @@ public class EmployeeService {
                                     MANAGER_NOT_FOUND.getDefaultMessage() + managerId));
                     employee.setManager(manager);
                 }
-            } else {
-                employee.setManager(null);  // JsonNullable.of(null) case
             }
         }
 
@@ -182,8 +170,6 @@ public class EmployeeService {
                                     DEPARTMENT_NOT_FOUND.getDefaultMessage() + deptId));
                     employee.setDepartment(dept);
                 }
-            } else {
-                employee.setDepartment(null);
             }
         }
 
@@ -199,8 +185,6 @@ public class EmployeeService {
                                     TEAM_NOT_FOUND.getDefaultMessage() + teamId));
                     employee.setTeam(team);
                 }
-            } else {
-                employee.setTeam(null);
             }
         }
 
@@ -217,8 +201,6 @@ public class EmployeeService {
                             .collect(Collectors.toSet());
                     employee.setExpertises(expertises);
                 }
-            } else {
-                employee.setExpertises(null);
             }
         }
 

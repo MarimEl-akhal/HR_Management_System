@@ -118,14 +118,14 @@ public class EmployeeControllerTest {
         assertNotNull(employee);
         assertNotNull(employee.getId());
         assertEquals(employee.getId(), employeeResponse.getId());
-        assertEquals(employee.getName(), EMPLOYEE_NAME);
+        assertEquals(EMPLOYEE_NAME, employee.getName());
         assertEquals(employee.getBirthDate(), EMPLOYEE_BIRTH_DATE);
         assertEquals(employee.getGraduationDate(), EMPLOYEE_GRADUATION_DATE);
-        assertEquals(employee.getGender(), MALE_EMPLOYEE);
+        assertEquals(MALE_EMPLOYEE, employee.getGender());
         assertEquals(employee.getGrossSalary(), EMPLOYEE_GROSS_SALARY);
-        assertEquals(employee.getManager().getId(), EXIST_MANAGER_ID);
-        assertEquals(employee.getDepartment().getId(), EXIST_DEPARTMENT2_ID);
-        assertEquals(employee.getTeam().getId(), EXIST_TEAM2_ID);
+        assertEquals(EXIST_MANAGER_ID, employee.getManager().getId());
+        assertEquals(EXIST_DEPARTMENT2_ID, employee.getDepartment().getId());
+        assertEquals(EXIST_TEAM2_ID, employee.getTeam().getId());
         assertEquals(employee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()), EXPERTISES);
     }
 
@@ -166,14 +166,14 @@ public class EmployeeControllerTest {
         assertNotNull(employee);
         assertNotNull(employee.getId());
         assertEquals(employee.getId(), employeeResponse.getId());
-        assertEquals(employee.getName(), EMPLOYEE_NAME);
+        assertEquals(EMPLOYEE_NAME, employee.getName());
         assertEquals(employee.getBirthDate(), EMPLOYEE_BIRTH_DATE);
         assertEquals(employee.getGraduationDate(), EMPLOYEE_GRADUATION_DATE);
-        assertEquals(employee.getGender(), MALE_EMPLOYEE);
+        assertEquals(MALE_EMPLOYEE, employee.getGender());
         assertEquals(employee.getGrossSalary(), EMPLOYEE_GROSS_SALARY);
-        assertEquals(employee.getManager().getId(), EXIST_MANAGER_ID);
-        assertEquals(employee.getDepartment().getId(), EXIST_DEPARTMENT2_ID);
-        assertEquals(employee.getTeam().getId(), EXIST_TEAM2_ID);
+        assertEquals(EXIST_MANAGER_ID, employee.getManager().getId());
+        assertEquals(EXIST_DEPARTMENT2_ID, employee.getDepartment().getId());
+        assertEquals(EXIST_TEAM2_ID, employee.getTeam().getId());
     }
 
     @Test
@@ -367,7 +367,7 @@ public class EmployeeControllerTest {
 
         assertNotNull(employee);
         assertNotNull(employee.getId());
-        assertEquals(employee.getId(), EXIST_MANAGER_ID);
+        assertEquals(EXIST_MANAGER_ID, employee.getId());
         assertEquals(EXIST_EMPLOYEE_NAME, employee.getName());
         assertEquals(EXIST_EMPLOYEE_BIRTH_DATE, employee.getBirthDate());
         assertEquals(EXIST_EMPLOYEE_GRAD_DATE, employee.getGraduationDate());
@@ -481,16 +481,16 @@ public class EmployeeControllerTest {
 
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
-        assertEquals(employeeResponse.getId(), EXIST_EMPLOYEE3_ID);
-        assertEquals(updatedEmployee.getId(), EXIST_EMPLOYEE3_ID);
-        assertEquals(updatedEmployee.getName(), UPDATE_NAME);
+        assertEquals(EXIST_EMPLOYEE3_ID, employeeResponse.getId());
+        assertEquals(EXIST_EMPLOYEE3_ID, updatedEmployee.getId());
+        assertEquals(UPDATE_NAME, updatedEmployee.getName());
         assertEquals(updatedEmployee.getGrossSalary(), UPDATE_GROSS_SALARY);
-        assertEquals(updatedEmployee.getGender(), MALE_EMPLOYEE);
+        assertEquals(MALE_EMPLOYEE, updatedEmployee.getGender());
         assertEquals(updatedEmployee.getBirthDate(), UPDATE_BIRTH_DATE);
         assertEquals(updatedEmployee.getGraduationDate(), UPDATE_GRAD_DATE);
-        assertEquals(updatedEmployee.getManager().getId(), EXIST_MANAGER_ID);
-        assertEquals(updatedEmployee.getTeam().getId(), EXIST_TEAM1_ID);
-        assertEquals(updatedEmployee.getDepartment().getId(), EXIST_DEPARTMENT2_ID);
+        assertEquals(EXIST_MANAGER_ID, updatedEmployee.getManager().getId());
+        assertEquals(EXIST_TEAM1_ID, updatedEmployee.getTeam().getId());
+        assertEquals(EXIST_DEPARTMENT2_ID, updatedEmployee.getDepartment().getId());
         assertEquals(updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()), UPDATE_EXPERTISES);
         assertTrue(updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).contains("Java"));
     }
@@ -516,7 +516,7 @@ public class EmployeeControllerTest {
 
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
-        assertEquals(updatedEmployee.getId(), EXIST_EMPLOYEE3_ID);
+        assertEquals(EXIST_EMPLOYEE3_ID, updatedEmployee.getId());
         assertEquals(updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()), UPDATE_EXPERTISES);
     }
 
@@ -546,7 +546,7 @@ public class EmployeeControllerTest {
 
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
-        assertEquals(updatedEmployee.getId(), EXIST_EMPLOYEE2_ID);
+        assertEquals(EXIST_EMPLOYEE2_ID, updatedEmployee.getId());
         assertEquals(updatedEmployee.getBirthDate(), UPDATE_BIRTH_DATE);
         assertEquals(updatedEmployee.getGraduationDate(), UPDATE_GRADUATION_DATE);
     }
@@ -680,7 +680,7 @@ public class EmployeeControllerTest {
 
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
-        assertEquals(updatedEmployee.getId(), EXIST_EMPLOYEE2_ID);
+        assertEquals(EXIST_EMPLOYEE2_ID, updatedEmployee.getId());
         assertThat(updatedEmployee.getName()).isNull();
     }
 }
