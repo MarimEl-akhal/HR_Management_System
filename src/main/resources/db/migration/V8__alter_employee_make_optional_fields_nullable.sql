@@ -1,0 +1,8 @@
+ALTER TABLE employees
+    MODIFY COLUMN birth_date DATE NULL;
+ALTER TABLE employees
+    MODIFY COLUMN graduation_date DATE NULL;
+ALTER TABLE employees
+    MODIFY COLUMN gender VARCHAR(255) NULL;
+ALTER TABLE employees
+    MODIFY COLUMN gross_salary DECIMAL(10, 2) NULL DEFAULT 0.0;

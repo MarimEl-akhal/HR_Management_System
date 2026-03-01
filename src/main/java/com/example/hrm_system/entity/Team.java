@@ -1,6 +1,5 @@
 package com.example.hrm_system.entity;
 
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -25,7 +24,6 @@ public class Team {
     private String name;
 
     @OneToMany(mappedBy = "team")
-    @JsonManagedReference
     private Set<Employee> employees = new HashSet<>();
 
 }

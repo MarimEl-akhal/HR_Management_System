@@ -1,11 +1,10 @@
 package com.example.hrm_system.entity;
 
 import com.example.hrm_system.enums.Gender;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -24,39 +23,35 @@ public class Employee {
     @Column(name = "employee_id")
     private Long id;
 
-    @Column(nullable = false)
+
     private String name;
 
-    @Column(name = "birth_date", nullable = false)
+    @Column(name = "birth_date")
     private LocalDate birthDate;
 
-    @Column(name = "graduation_date", nullable = false)
+    @Column(name = "graduation_date")
     private LocalDate graduationDate;
 
-    @Column(nullable = false)
+
     @Enumerated(EnumType.STRING)
     private Gender gender;
 
-    @Column(name = "gross_salary", nullable = false)
-    private Double grossSalary;
+    @Column(name = "gross_salary")
+    private BigDecimal grossSalary;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "manager_id")
-    @JsonBackReference("manager-subordinates")
     private Employee manager;
 
     @OneToMany(mappedBy = "manager")
-    @JsonManagedReference("manager-subordinates")
     private Set<Employee> subordinates = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id")
-    @JsonBackReference("department-employees")
     private Department department;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "team_id")
-    @JsonBackReference("team-employees")
     private Team team;
 
     @ManyToMany

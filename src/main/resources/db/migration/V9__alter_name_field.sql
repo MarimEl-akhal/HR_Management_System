@@ -1,0 +1,2 @@
+ALTER TABLE employees
+    MODIFY COLUMN name VARCHAR(255) NULL;
