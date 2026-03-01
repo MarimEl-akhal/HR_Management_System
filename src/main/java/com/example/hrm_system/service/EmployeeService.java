@@ -1,6 +1,5 @@
 package com.example.hrm_system.service;
 
-import com.example.hrm_system.configuration.JacksonConfiguration;
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
 import com.example.hrm_system.dto.UpdateEmployeeRequest;
@@ -31,7 +30,6 @@ public class EmployeeService {
     private final DepartmentRepository departmentRepository;
     private final TeamRepository teamRepository;
     private final ExpertiseRepository expertiseRepository;
-    private final JacksonConfiguration jacksonConfiguration;
 
 
     public EmployeeResponse addEmployee(EmployeeRequest employeeRequest) {
