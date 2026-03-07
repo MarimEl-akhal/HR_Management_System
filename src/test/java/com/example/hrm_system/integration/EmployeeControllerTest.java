@@ -708,6 +708,7 @@ public class EmployeeControllerTest {
         assertThat(employeeSalaryResponse.getNetSalary().compareTo(netSalary));
 
     }
+
     @Test
     @Transactional
     @DatabaseSetup("/dataset/get-employee-salary-info.xml")
@@ -718,6 +719,7 @@ public class EmployeeControllerTest {
                         .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
 
     }
+
     @Test
     @Transactional
     @DatabaseSetup("/dataset/get-employee-negative-salary.xml")
