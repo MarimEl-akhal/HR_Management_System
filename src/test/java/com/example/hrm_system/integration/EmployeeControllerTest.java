@@ -708,5 +708,15 @@ public class EmployeeControllerTest {
         assertThat(employeeSalaryResponse.getNetSalary().compareTo(netSalary));
 
     }
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employee-salary-info.xml")
+    public void testGetEmployeeSalary_whenNotFoundEmployee_shouldReturnNotFound() throws Exception {
+        mockMvc.perform(get("/api/employees/" + NO_EXIST_EMPLOYEE_ID + "/salary"))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
+
+    }
 
 }
