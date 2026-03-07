@@ -3,6 +3,7 @@ package com.example.hrm_system.integration;
 import com.example.hrm_system.configuration.JacksonConfiguration;
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
+import com.example.hrm_system.dto.EmployeeSalaryDto;
 import com.example.hrm_system.dto.UpdateEmployeeRequest;
 import com.example.hrm_system.entity.Employee;
 import com.example.hrm_system.entity.Expertise;
@@ -67,6 +68,9 @@ public class EmployeeControllerTest {
     private static final Long EXIST_EMPLOYEE3_ID = 3L;
     private static final Long EXIST_EMPLOYEE4_ID = 4L;
 
+    private static final BigDecimal TAX_RATIO = BigDecimal.valueOf(0.15);
+    private static final BigDecimal TAX_REMAINDER = BigDecimal.ONE.subtract(TAX_RATIO);
+    private static final BigDecimal INSURANCE_AMOUNT = BigDecimal.valueOf(500);
 
     @Autowired
     private MockMvc mockMvc;
@@ -683,4 +687,26 @@ public class EmployeeControllerTest {
         assertEquals(EXIST_EMPLOYEE2_ID, updatedEmployee.getId());
         assertThat(updatedEmployee.getName()).isNull();
     }
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employee-salary-info.xml")
+    public void testGetEmployeeSalaryInfo_whenEmployeeExistsAndValidGrossSalary_shouldReturnCorrectNetSalary() throws Exception {
+        final BigDecimal grossSalary = BigDecimal.valueOf(15000);
+
+        /* net = grossSalary - (grossSalary*TAX_RATIO) - INSURANCE_AMOUNT
+                = grossSalary(1-TAX_RATIO)-INSURANCE_AMOUNT
+              = grossSalary(TAX_REMAINDER)-INSURANCE_AMOUNT */
+        BigDecimal netSalary = grossSalary.multiply(TAX_REMAINDER).subtract(INSURANCE_AMOUNT);
+
+        MvcResult result = mockMvc.perform(get("/api/employees/" + EXIST_EMPLOYEE2_ID + "/salary"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        EmployeeSalaryDto employeeSalaryResponse = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), EmployeeSalaryDto.class);
+        assertThat(employeeSalaryResponse.getGrossSalary().compareTo(grossSalary));
+        assertThat(employeeSalaryResponse.getNetSalary().compareTo(netSalary));
+
+    }
+
 }
