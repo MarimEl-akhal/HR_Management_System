@@ -729,4 +729,16 @@ public class EmployeeControllerTest {
 
     }
 
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employee-negative-salary.xml")
+    public void testGetEmployeeSalary_whenNegativeNetSalary_shouldReturnIsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/employees/" + EXIST_EMPLOYEE2_ID + "/salary"))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(NEGATIVE_SALARY.getDefaultMessage())));
+
+    }
+
 }
