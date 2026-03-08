@@ -63,6 +63,7 @@ public class EmployeeControllerTest {
     private static final Long EXIST_DEPARTMENT2_ID = 2L;
     private static final Long EXIST_TEAM1_ID = 1L;
     private static final Long EXIST_TEAM2_ID = 2L;
+    private static final Long EXIST_EMPTY_TEAM_ID = 3L;
     private static final Long EXIST_EXPERTISE1_ID = 1L;
     private static final Long EXIST_EXPERTISE2_ID = 2L;
     private static final Long EXIST_EMPLOYEE2_ID = 2L;
@@ -710,6 +711,28 @@ public class EmployeeControllerTest {
         assertEquals(EXPECTED_EMPLOYEES_NAME, employees.stream().map(Employee::getName).collect(Collectors.toSet()));
         assertEquals(EXPECTED_EMPLOYEES_NAME.size(), employees.stream().map(Employee::getName).collect(Collectors.toSet()).size());
 
+
+    }
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employees-in-some-team.xml")
+    public void testGetAllEmployeesInSomeTeam_whenTeamHasNoEmployees_shouldReturnEmptySet() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/teams/" + EXIST_EMPTY_TEAM_ID + "/employees"))
+                .andExpect(status().isOk())
+                .andReturn();
+        Set<EmployeeResponse> employeeResponses = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        Set<Employee> employees = new HashSet<>(employeeRepository.findAllEmployeesByTeamId(EXIST_EMPTY_TEAM_ID));
+
+
+        //from response
+        assertNotNull(employeeResponses);
+        assertTrue(employeeResponses.isEmpty());
+
+        //from db
+        assertTrue(employees.isEmpty());
 
     }
 }
