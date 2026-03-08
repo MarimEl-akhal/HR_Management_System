@@ -10,9 +10,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Set;
+
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/employees")
+@RequestMapping("/api")
 public class EmployeeController {
 
     private final EmployeeService employeeService;
@@ -23,22 +25,28 @@ public class EmployeeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/employees/{id}")
     public ResponseEntity<EmployeeResponse> findEmployeeById(@PathVariable Long id) {
         EmployeeResponse response = employeeService.findById(id);
         return ResponseEntity.ok(response);
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/employees/{id}")
     public ResponseEntity<Void> deleteEmployee(@PathVariable Long id) {
         employeeService.deleteEmployee(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 
-    @PatchMapping("/{id}")
+    @PatchMapping("/employees/{id}")
     public ResponseEntity<EmployeeResponse> updateEmployee(@PathVariable Long id, @RequestBody UpdateEmployeeRequest employeeRequest) {
         EmployeeResponse response = employeeService.updateEmployee(id, employeeRequest);
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/teams/{teamId}/employees")
+    public ResponseEntity<Set<EmployeeResponse>> getAllEmployeesByTeamId(@PathVariable Long teamId){
+        Set<EmployeeResponse> responses = employeeService.getAllEmployeesByTeamId(teamId);
+        return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
 

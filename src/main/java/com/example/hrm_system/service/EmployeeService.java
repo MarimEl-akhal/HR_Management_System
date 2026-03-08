@@ -206,6 +206,11 @@ public class EmployeeService {
 
         return EmployeeMapper.toResponse(employeeRepository.save(employee));
     }
+
+    public Set<EmployeeResponse> getAllEmployeesByTeamId(Long teamId) {
+        Set<Employee> employees = employeeRepository.findAllEmployeesByTeamId(teamId);
+        return employees.stream().map(EmployeeMapper::toResponse).collect(Collectors.toSet());
+    }
 }
 
 

@@ -695,7 +695,7 @@ public class EmployeeControllerTest {
         MvcResult result = mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees"))
                 .andExpect(status().isOk())
                 .andReturn();
-        Set<EmployeeResponse> employeeResponses = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<Set<EmployeeResponse>>() {
+        Set<EmployeeResponse> employeeResponses = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
         });
 
         Set<Employee> employees = new HashSet<>(employeeRepository.findAllEmployeesByTeamId(EXIST_TEAM1_ID));
