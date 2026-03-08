@@ -735,4 +735,16 @@ public class EmployeeControllerTest {
         assertTrue(employees.isEmpty());
 
     }
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employees-in-some-team.xml")
+    public void testGetAllEmployeesInSomeTeam_whenNotFoundTeam_shouldReturnNotFound() throws Exception {
+        mockMvc.perform(get("/api/teams/" + NO_EXIST_TEAM_ID + "/employees"))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(TEAM_NOT_FOUND.getDefaultMessage() + NO_EXIST_TEAM_ID)));
+
+    }
+
 }
