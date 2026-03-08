@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<dataset>
+    <!-- Departments -->
+    <departments department_id="1" name="Engineering"/>
+
+    <!-- Teams -->
+    <teams team_id="1" name="Backend"/>
+    <teams team_id="2" name="Frontend"/>
+    <teams team_id="3" name="QA"/>
+
+    <!-- employees -->
+    <employees employee_id="1"
+               name="Zaid"
+               birth_date="1975-01-01"
+               graduation_date="2000-01-01"
+               gender="MALE"
+               gross_salary="100000.0"
+               department_id="1"
+               team_id="1"
+    />
+    <employees employee_id="2"
+               name="Salim"
+               birth_date="1995-05-01"
+               graduation_date="2017-06-01"
+               gender="MALE"
+               gross_salary="90000.0"
+               manager_id="1"
+               department_id="1"
+               team_id="1"
+    />
+    <employees employee_id="3"
+               name="Laila"
+               birth_date="1999-08-12"
+               graduation_date="2021-06-10"
+               gender="FEMALE"
+               gross_salary="60000.0"
+               manager_id="2"
+               team_id="1"
+    />
+
+    <employees employee_id="4"
+               name="Rana"
+               birth_date="2000-12-12"
+               graduation_date="2022-06-10"
+               gender="FEMALE"
+               gross_salary="50000.0"
+               manager_id="2"
+               team_id="2"
+    />
+
+    <employees employee_id="5"
+               name="Ahmed"
+               birth_date="2003-03-14"
+               graduation_date="2025-06-10"
+               gender="MALE"
+               gross_salary="55000.0"
+               manager_id="2"
+               team_id="2"
+    />
+
+</dataset>
