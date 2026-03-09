@@ -208,6 +208,9 @@ public class EmployeeService {
     }
 
     public Set<EmployeeResponse> getDirectEmployeesUnderManger(Long managerId) {
+        employeeRepository.findById(managerId)
+                .orElseThrow(() -> new ApiException(MANAGER_NOT_FOUND,
+                        MANAGER_NOT_FOUND.getDefaultMessage() + managerId));
         Set<Employee> employees = employeeRepository.findAllDirectEmployeesByManagerId(managerId);
         return employees.stream().map(EmployeeMapper::toResponse).collect(Collectors.toSet());
     }
