@@ -736,4 +736,15 @@ public class EmployeeControllerTest {
 
     }
 
-}
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-direct-employees-under-some-manager.xml")
+    public void  testGetDirectEmployeesUnderManager_whenNotFoundManager_shouldFailAndReturnNotFound() throws Exception {
+        mockMvc.perform(get("/api/employees/" + NO_EXIST_MANAGER_ID + "/subordinates"))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(MANAGER_NOT_FOUND.getDefaultMessage() + NO_EXIST_MANAGER_ID)));
+    }
+
+
+    }
