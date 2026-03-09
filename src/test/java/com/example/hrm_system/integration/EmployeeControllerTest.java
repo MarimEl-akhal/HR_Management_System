@@ -10,6 +10,7 @@ import com.example.hrm_system.enums.Gender;
 import com.example.hrm_system.exception.ApiException;
 import com.example.hrm_system.repository.EmployeeRepository;
 import com.example.hrm_system.repository.ExpertiseRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.github.springtestdbunit.annotation.DbUnitConfiguration;
@@ -30,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -682,5 +684,31 @@ public class EmployeeControllerTest {
         assertNotNull(updatedEmployee.getId());
         assertEquals(EXIST_EMPLOYEE2_ID, updatedEmployee.getId());
         assertThat(updatedEmployee.getName()).isNull();
+    }
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employees-under-specific-manager.xml")
+    public void testGetAllEmployeesUnderSpecificManager_whenManagerExists_shouldSuccessAndReturnEmployeesUnderTheManager() throws Exception {
+        final Set<String> EXPECTED_EMPLOYEES_NAME = Set.of("Salim", "Laila","Malak","Ali");
+
+        MvcResult result = mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID + "/subordinates"))
+                .andExpect(status().isOk())
+                .andReturn();
+        Set<EmployeeResponse> employeeResponses = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        Set<Employee> employees = new HashSet<>(employeeRepository.getEmployeesByManagerId(EXIST_MANAGER_ID));
+
+
+        //from response
+        assertNotNull(employeeResponses);
+        assertEquals(EXPECTED_EMPLOYEES_NAME, employeeResponses.stream().map(EmployeeResponse::getName).collect(Collectors.toSet()));
+        assertEquals(EXPECTED_EMPLOYEES_NAME.size(), employeeResponses.stream().map(EmployeeResponse::getName).collect(Collectors.toSet()).size());
+
+        //from db
+        assertEquals(EXPECTED_EMPLOYEES_NAME, employees.stream().map(Employee::getName).collect(Collectors.toSet()));
+        assertEquals(EXPECTED_EMPLOYEES_NAME.size(), employees.stream().map(Employee::getName).collect(Collectors.toSet()).size());
+
+
     }
 }
