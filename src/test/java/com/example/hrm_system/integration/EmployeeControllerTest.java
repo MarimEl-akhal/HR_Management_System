@@ -713,4 +713,27 @@ public class EmployeeControllerTest {
 
     }
 
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-direct-employees-under-some-manager.xml")
+    public void  testGetDirectEmployeesUnderManager_whenEmployeeExistsAndHasNoSubordinates_shouldSuccessAndReturnEmptySet() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/employees/" + EXIST_EMPLOYEE3_ID + "/subordinates"))
+                .andExpect(status().isOk())
+                .andReturn();
+        Set<EmployeeResponse> employeeResponses = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        Set<Employee> employees = new HashSet<>(employeeRepository.findAllDirectEmployeesByManagerId(EXIST_EMPLOYEE3_ID));
+
+
+        //from response
+        assertNotNull(employeeResponses);
+        assertTrue(employeeResponses.isEmpty());
+
+        //from db
+        assertTrue(employees.isEmpty());
+
+    }
+
 }
