@@ -17,7 +17,7 @@ import com.example.hrm_system.repository.TeamRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.hrm_system.enums.ApiError.*;
@@ -206,6 +206,13 @@ public class EmployeeService {
 
         return EmployeeMapper.toResponse(employeeRepository.save(employee));
     }
+
+
+    public Set<EmployeeResponse> getAllEmployeesUnderSpecificManger(Long managerId){
+        Set<Employee> employees = employeeRepository.findAllEmployeesByManagerId(managerId);
+        return employees.stream().map(EmployeeMapper::toResponse).collect(Collectors.toSet());
+    }
 }
+
 
 

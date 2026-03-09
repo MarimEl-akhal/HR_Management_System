@@ -32,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static com.example.hrm_system.enums.ApiError.*;
@@ -685,6 +685,7 @@ public class EmployeeControllerTest {
         assertEquals(EXIST_EMPLOYEE2_ID, updatedEmployee.getId());
         assertThat(updatedEmployee.getName()).isNull();
     }
+
     @Test
     @Transactional
     @DatabaseSetup("/dataset/get-employees-under-specific-manager.xml")
@@ -697,7 +698,7 @@ public class EmployeeControllerTest {
         Set<EmployeeResponse> employeeResponses = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
         });
 
-        Set<Employee> employees = new HashSet<>(employeeRepository.getEmployeesByManagerId(EXIST_MANAGER_ID));
+        Set<Employee> employees = new HashSet<>(employeeRepository.findAllEmployeesByManagerId(EXIST_MANAGER_ID));
 
 
         //from response
