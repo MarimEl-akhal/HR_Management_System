@@ -32,7 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashSet;
-import java.util.*;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.example.hrm_system.enums.ApiError.*;
@@ -690,7 +690,7 @@ public class EmployeeControllerTest {
     @Transactional
     @DatabaseSetup("/dataset/get-employees-under-specific-manager.xml")
     public void testGetAllEmployeesUnderSpecificManager_whenManagerExists_shouldSuccessAndReturnEmployeesUnderTheManager() throws Exception {
-        final Set<String> EXPECTED_EMPLOYEES_NAME = Set.of("Salim", "Laila","Malak","Ali");
+        final Set<String> EXPECTED_EMPLOYEES_NAME = Set.of("Salim", "Laila", "Malak", "Ali");
 
         MvcResult result = mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID + "/subordinates"))
                 .andExpect(status().isOk())
@@ -712,4 +712,29 @@ public class EmployeeControllerTest {
 
 
     }
+
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employees-under-specific-manager.xml")
+    public void testGetAllEmployeesUnderSpecificManager_whenEmployeeExistsAndHasNoSubordinates_shouldSuccessAndReturnEmptySet() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/employees/" + EXIST_EMPLOYEE4_ID + "/subordinates"))
+                .andExpect(status().isOk())
+                .andReturn();
+        Set<EmployeeResponse> employeeResponses = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        Set<Employee> employees = new HashSet<>(employeeRepository.findAllEmployeesByManagerId(EXIST_EMPLOYEE4_ID));
+
+
+        //from response
+        assertNotNull(employeeResponses);
+        assertTrue(employeeResponses.isEmpty());
+
+        //from db
+        assertTrue(employees.isEmpty());
+
+    }
+
+
 }
