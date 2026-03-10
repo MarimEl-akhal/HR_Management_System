@@ -2,6 +2,7 @@ package com.example.hrm_system.controller;
 
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
+import com.example.hrm_system.dto.EmployeeSalaryDto;
 import com.example.hrm_system.dto.UpdateEmployeeRequest;
 import com.example.hrm_system.service.EmployeeService;
 import jakarta.validation.Valid;
@@ -47,6 +48,11 @@ public class EmployeeController {
     public ResponseEntity<Set<EmployeeResponse>> getEmployeesUnderSpecificManager(@PathVariable Long managerId){
         Set<EmployeeResponse> responses = employeeService.getAllEmployeesUnderSpecificManger(managerId);
         return ResponseEntity.status(HttpStatus.OK).body(responses);
+}
+    @GetMapping("/{id}/salary")
+    public ResponseEntity<EmployeeSalaryDto> getEmployeeSalaryInfo(@PathVariable Long id) {
+        EmployeeSalaryDto employeeSalaryResponse = employeeService.getEmployeeSalaryInfo(id);
+        return ResponseEntity.status(HttpStatus.OK).body(employeeSalaryResponse);
     }
 
 
