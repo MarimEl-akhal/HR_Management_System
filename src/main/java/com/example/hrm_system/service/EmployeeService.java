@@ -213,6 +213,13 @@ public class EmployeeService {
         return EmployeeMapper.toResponse(employeeRepository.save(employee));
     }
 
+    public Set<EmployeeResponse> getDirectEmployeesUnderManger(Long managerId) {
+        employeeRepository.findById(managerId)
+                .orElseThrow(() -> new ApiException(MANAGER_NOT_FOUND,
+                        MANAGER_NOT_FOUND.getDefaultMessage() + managerId));
+        Set<Employee> employees = employeeRepository.findAllDirectEmployeesByManagerId(managerId);
+        return employees.stream().map(EmployeeMapper::toResponse).collect(Collectors.toSet());
+}
     public EmployeeSalaryDto getEmployeeSalaryInfo(Long id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND, "Employee not found with id: " + id));
