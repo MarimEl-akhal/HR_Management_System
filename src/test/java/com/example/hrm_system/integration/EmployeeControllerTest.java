@@ -11,7 +11,6 @@ import com.example.hrm_system.enums.Gender;
 import com.example.hrm_system.exception.ApiException;
 import com.example.hrm_system.repository.EmployeeRepository;
 import com.example.hrm_system.repository.ExpertiseRepository;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.github.springtestdbunit.annotation.DbUnitConfiguration;
@@ -32,7 +31,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -64,7 +62,6 @@ public class EmployeeControllerTest {
     private static final Long EXIST_DEPARTMENT2_ID = 2L;
     private static final Long EXIST_TEAM1_ID = 1L;
     private static final Long EXIST_TEAM2_ID = 2L;
-    private static final Long EXIST_EMPTY_TEAM_ID = 3L;
     private static final Long EXIST_EXPERTISE1_ID = 1L;
     private static final Long EXIST_EXPERTISE2_ID = 2L;
     private static final Long EXIST_EMPLOYEE2_ID = 2L;

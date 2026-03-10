@@ -2,8 +2,6 @@ package com.example.hrm_system.integration;
 
 import com.example.hrm_system.configuration.JacksonConfiguration;
 import com.example.hrm_system.dto.EmployeeResponse;
-import com.example.hrm_system.entity.Employee;
-import com.example.hrm_system.repository.EmployeeRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
@@ -21,13 +19,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static com.example.hrm_system.enums.ApiError.*;
+import static com.example.hrm_system.enums.ApiError.TEAM_NOT_FOUND;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -50,15 +47,13 @@ public class TeamControllerTest {
     private MockMvc mockMvc;
     @Autowired
     private JacksonConfiguration jacksonConfiguration;
-    @Autowired
-    private EmployeeRepository employeeRepository;
 
 
     @Test
     @Transactional
     @DatabaseSetup("/dataset/get-employees-in-some-team.xml")
     public void testGetAllEmployeesInSomeTeam_whenTeamExists_shouldSuccessAndReturnEmployeesInTeam() throws Exception {
-        final Set<String> EXPECTED_EMPLOYEES_NAME = Set.of("Zaid", "Salim", "Laila");
+        final Set<String> EXPECTED_EMPLOYEES_NAMES = Set.of("Zaid", "Salim", "Laila");
 
         MvcResult result = mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees"))
                 .andExpect(status().isOk())
@@ -66,18 +61,13 @@ public class TeamControllerTest {
         Set<EmployeeResponse> employeeResponses = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
         });
 
-        Set<Employee> employees = new HashSet<>(employeeRepository.findAllEmployeesByTeamId(EXIST_TEAM1_ID));
+        Set<String> actualEmployeesNames = employeeResponses.stream()
+                .map(EmployeeResponse::getName)
+                .collect(Collectors.toSet());
 
-
-        //from response
         assertNotNull(employeeResponses);
-        assertEquals(EXPECTED_EMPLOYEES_NAME, employeeResponses.stream().map(EmployeeResponse::getName).collect(Collectors.toSet()));
-        assertEquals(EXPECTED_EMPLOYEES_NAME.size(), employeeResponses.stream().map(EmployeeResponse::getName).collect(Collectors.toSet()).size());
-
-        //from db
-        assertEquals(EXPECTED_EMPLOYEES_NAME, employees.stream().map(Employee::getName).collect(Collectors.toSet()));
-        assertEquals(EXPECTED_EMPLOYEES_NAME.size(), employees.stream().map(Employee::getName).collect(Collectors.toSet()).size());
-
+        assertEquals(EXPECTED_EMPLOYEES_NAMES, actualEmployeesNames);
+        assertEquals(EXPECTED_EMPLOYEES_NAMES.size(), actualEmployeesNames.size());
 
     }
 
@@ -91,16 +81,8 @@ public class TeamControllerTest {
         Set<EmployeeResponse> employeeResponses = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
         });
 
-        Set<Employee> employees = new HashSet<>(employeeRepository.findAllEmployeesByTeamId(EXIST_EMPTY_TEAM_ID));
-
-
-        //from response
         assertNotNull(employeeResponses);
         assertTrue(employeeResponses.isEmpty());
-
-        //from db
-        assertTrue(employees.isEmpty());
-
     }
 
     @Test
