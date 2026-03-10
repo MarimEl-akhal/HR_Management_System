@@ -238,13 +238,6 @@ public class EmployeeService {
 
     }
 
-    public Set<EmployeeResponse> getAllEmployeesByTeamId(Long teamId) {
-        Team team = teamRepository.findById(teamId)
-                .orElseThrow(() -> new ApiException(TEAM_NOT_FOUND,
-                        TEAM_NOT_FOUND.getDefaultMessage() + teamId));
-        Set<Employee> employees = employeeRepository.findAllEmployeesByTeamId(team.getId());
-        return employees.stream().map(EmployeeMapper::toResponse).collect(Collectors.toSet());
-    }
 }
 
 

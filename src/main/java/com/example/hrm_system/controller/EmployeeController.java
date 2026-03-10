@@ -50,11 +50,4 @@ public class EmployeeController {
         return ResponseEntity.status(HttpStatus.OK).body(employeeSalaryResponse);
     }
 
-    @GetMapping("/teams/{teamId}/employees")
-    public ResponseEntity<Set<EmployeeResponse>> getAllEmployeesByTeamId(@PathVariable Long teamId) {
-        Set<EmployeeResponse> responses = employeeService.getAllEmployeesByTeamId(teamId);
-        return ResponseEntity.status(HttpStatus.OK).body(responses);
-    }
-
-
 }
