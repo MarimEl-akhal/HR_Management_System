@@ -11,6 +11,7 @@ import com.example.hrm_system.enums.Gender;
 import com.example.hrm_system.exception.ApiException;
 import com.example.hrm_system.repository.EmployeeRepository;
 import com.example.hrm_system.repository.ExpertiseRepository;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.github.springtestdbunit.annotation.DbUnitConfiguration;
@@ -31,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -690,6 +692,52 @@ public class EmployeeControllerTest {
 
     @Test
     @Transactional
+    @DatabaseSetup("/dataset/get-employees-under-specific-manager.xml")
+    public void testGetAllEmployeesUnderSpecificManager_whenManagerExists_shouldSuccessAndReturnEmployeesUnderTheManager() throws Exception {
+        final Set<String> EXPECTED_EMPLOYEES_NAME = Set.of("Salim", "Laila", "Malak", "Ali");
+
+        MvcResult result = mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID + "/subordinates"))
+                .andExpect(status().isOk())
+                .andReturn();
+        Set<EmployeeResponse> employeeResponses = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        Set<Employee> employees = new HashSet<>(employeeRepository.findAllEmployeesByManagerId(EXIST_MANAGER_ID));
+
+
+        //from response
+        assertNotNull(employeeResponses);
+        assertEquals(EXPECTED_EMPLOYEES_NAME, employeeResponses.stream().map(EmployeeResponse::getName).collect(Collectors.toSet()));
+        assertEquals(EXPECTED_EMPLOYEES_NAME.size(), employeeResponses.stream().map(EmployeeResponse::getName).collect(Collectors.toSet()).size());
+
+        //from db
+        assertEquals(EXPECTED_EMPLOYEES_NAME, employees.stream().map(Employee::getName).collect(Collectors.toSet()));
+        assertEquals(EXPECTED_EMPLOYEES_NAME.size(), employees.stream().map(Employee::getName).collect(Collectors.toSet()).size());
+
+
+    }
+
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employees-under-specific-manager.xml")
+    public void testGetAllEmployeesUnderSpecificManager_whenEmployeeExistsAndHasNoSubordinates_shouldSuccessAndReturnEmptySet() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/employees/" + EXIST_EMPLOYEE4_ID + "/subordinates"))
+                .andExpect(status().isOk())
+                .andReturn();
+        Set<EmployeeResponse> employeeResponses = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        Set<Employee> employees = new HashSet<>(employeeRepository.findAllEmployeesByManagerId(EXIST_EMPLOYEE4_ID));
+
+
+        //from response
+        assertNotNull(employeeResponses);
+        assertTrue(employeeResponses.isEmpty());
+
+        //from db
+        assertTrue(employees.isEmpty());
+    }
     @DatabaseSetup("/dataset/get-employee-salary-info.xml")
     public void testGetEmployeeSalaryInfo_whenEmployeeExistsAndValidGrossSalary_shouldReturnCorrectNetSalary() throws Exception {
         final BigDecimal grossSalary = BigDecimal.valueOf(15000);
@@ -734,6 +782,14 @@ public class EmployeeControllerTest {
 
     @Test
     @Transactional
+    @DatabaseSetup("/dataset/get-employees-under-specific-manager.xml")
+    public void testGetAllEmployeesUnderSpecificManager_whenNotFoundManger_shouldFailAndReturnNotFound() throws Exception {
+        mockMvc.perform(get("/api/employees/" + NO_EXIST_MANAGER_ID + "/subordinates"))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(MANAGER_NOT_FOUND.getDefaultMessage() + NO_EXIST_MANAGER_ID)));
+    }
+
     @DatabaseSetup("/dataset/get-employee-negative-salary.xml")
     public void testGetEmployeeSalary_whenNegativeNetSalary_shouldReturnIsBadRequest() throws Exception {
         mockMvc.perform(get("/api/employees/" + EXIST_EMPLOYEE2_ID + "/salary"))

@@ -11,6 +11,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.*;
+
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/employees")
@@ -42,6 +44,11 @@ public class EmployeeController {
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
+    @GetMapping("/{managerId}/subordinates")
+    public ResponseEntity<Set<EmployeeResponse>> getEmployeesUnderSpecificManager(@PathVariable Long managerId){
+        Set<EmployeeResponse> responses = employeeService.getAllEmployeesUnderSpecificManger(managerId);
+        return ResponseEntity.status(HttpStatus.OK).body(responses);
+}
     @GetMapping("/{id}/salary")
     public ResponseEntity<EmployeeSalaryDto> getEmployeeSalaryInfo(@PathVariable Long id) {
         EmployeeSalaryDto employeeSalaryResponse = employeeService.getEmployeeSalaryInfo(id);
