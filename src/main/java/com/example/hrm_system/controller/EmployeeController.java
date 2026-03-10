@@ -2,6 +2,7 @@ package com.example.hrm_system.controller;
 
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
+import com.example.hrm_system.dto.EmployeeSalaryDto;
 import com.example.hrm_system.dto.UpdateEmployeeRequest;
 import com.example.hrm_system.service.EmployeeService;
 import jakarta.validation.Valid;
@@ -41,6 +42,12 @@ public class EmployeeController {
     public ResponseEntity<EmployeeResponse> updateEmployee(@PathVariable Long id, @RequestBody UpdateEmployeeRequest employeeRequest) {
         EmployeeResponse response = employeeService.updateEmployee(id, employeeRequest);
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    @GetMapping("/{id}/salary")
+    public ResponseEntity<EmployeeSalaryDto> getEmployeeSalaryInfo(@PathVariable Long id) {
+        EmployeeSalaryDto employeeSalaryResponse = employeeService.getEmployeeSalaryInfo(id);
+        return ResponseEntity.status(HttpStatus.OK).body(employeeSalaryResponse);
     }
 
     @GetMapping("/teams/{teamId}/employees")

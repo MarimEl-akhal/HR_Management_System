@@ -2,6 +2,7 @@ package com.example.hrm_system.service;
 
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
+import com.example.hrm_system.dto.EmployeeSalaryDto;
 import com.example.hrm_system.dto.UpdateEmployeeRequest;
 import com.example.hrm_system.entity.Department;
 import com.example.hrm_system.entity.Employee;
@@ -17,6 +18,7 @@ import com.example.hrm_system.repository.TeamRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -25,6 +27,10 @@ import static com.example.hrm_system.enums.ApiError.*;
 @Service
 @AllArgsConstructor
 public class EmployeeService {
+
+    private static final BigDecimal TAX_RATIO = BigDecimal.valueOf(0.15);
+    private static final BigDecimal TAX_REMAINDER = BigDecimal.ONE.subtract(TAX_RATIO);
+    private static final BigDecimal INSURANCE_AMOUNT = BigDecimal.valueOf(500);
 
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
@@ -142,7 +148,7 @@ public class EmployeeService {
                 employee.setGrossSalary(employeeRequest.getGrossSalary().get());
             }
         }
-// Manager ID
+
         if (employeeRequest.getManagerId() != null) {
             if (employeeRequest.getManagerId().isPresent()) {
                 Long managerId = employeeRequest.getManagerId().get();
@@ -205,6 +211,31 @@ public class EmployeeService {
         }
 
         return EmployeeMapper.toResponse(employeeRepository.save(employee));
+    }
+
+    public EmployeeSalaryDto getEmployeeSalaryInfo(Long id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND, "Employee not found with id: " + id));
+
+
+        if (employee.getGrossSalary().compareTo(BigDecimal.ZERO) < 0) {
+            throw new ApiException(ApiError.INVALID_GROSS_SALARY);
+        }
+
+        /* net = grossSalary - (grossSalary*TAX_RATIO) - INSURANCE_AMOUNT
+                = grossSalary(1-TAX_RATIO)-INSURANCE_AMOUNT
+              = grossSalary(TAX_REMAINDER)-INSURANCE_AMOUNT */
+        BigDecimal netSalary = employee.getGrossSalary().multiply(TAX_REMAINDER).subtract(INSURANCE_AMOUNT);
+
+        if (netSalary.compareTo(BigDecimal.ZERO) < 0) {
+            throw new ApiException(NEGATIVE_SALARY);
+        }
+
+        return EmployeeSalaryDto.builder()
+                .grossSalary(employee.getGrossSalary())
+                .netSalary(netSalary)
+                .build();
+
     }
 
     public Set<EmployeeResponse> getAllEmployeesByTeamId(Long teamId) {

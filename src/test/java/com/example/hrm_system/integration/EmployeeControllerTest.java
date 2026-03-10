@@ -3,6 +3,7 @@ package com.example.hrm_system.integration;
 import com.example.hrm_system.configuration.JacksonConfiguration;
 import com.example.hrm_system.dto.EmployeeRequest;
 import com.example.hrm_system.dto.EmployeeResponse;
+import com.example.hrm_system.dto.EmployeeSalaryDto;
 import com.example.hrm_system.dto.UpdateEmployeeRequest;
 import com.example.hrm_system.entity.Employee;
 import com.example.hrm_system.entity.Expertise;
@@ -70,6 +71,9 @@ public class EmployeeControllerTest {
     private static final Long EXIST_EMPLOYEE3_ID = 3L;
     private static final Long EXIST_EMPLOYEE4_ID = 4L;
 
+    private static final BigDecimal TAX_RATIO = BigDecimal.valueOf(0.15);
+    private static final BigDecimal TAX_REMAINDER = BigDecimal.ONE.subtract(TAX_RATIO);
+    private static final BigDecimal INSURANCE_AMOUNT = BigDecimal.valueOf(500);
 
     @Autowired
     private MockMvc mockMvc;
@@ -122,14 +126,14 @@ public class EmployeeControllerTest {
         assertNotNull(employee.getId());
         assertEquals(employee.getId(), employeeResponse.getId());
         assertEquals(EMPLOYEE_NAME, employee.getName());
-        assertEquals(employee.getBirthDate(), EMPLOYEE_BIRTH_DATE);
-        assertEquals(employee.getGraduationDate(), EMPLOYEE_GRADUATION_DATE);
+        assertEquals(EMPLOYEE_BIRTH_DATE, employee.getBirthDate());
+        assertEquals(EMPLOYEE_GRADUATION_DATE, employee.getGraduationDate());
         assertEquals(MALE_EMPLOYEE, employee.getGender());
-        assertEquals(employee.getGrossSalary(), EMPLOYEE_GROSS_SALARY);
+        assertEquals(EMPLOYEE_GROSS_SALARY, employee.getGrossSalary());
         assertEquals(EXIST_MANAGER_ID, employee.getManager().getId());
         assertEquals(EXIST_DEPARTMENT2_ID, employee.getDepartment().getId());
         assertEquals(EXIST_TEAM2_ID, employee.getTeam().getId());
-        assertEquals(employee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()), EXPERTISES);
+        assertEquals(EXPERTISES, employee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()));
     }
 
     @Test
@@ -170,10 +174,10 @@ public class EmployeeControllerTest {
         assertNotNull(employee.getId());
         assertEquals(employee.getId(), employeeResponse.getId());
         assertEquals(EMPLOYEE_NAME, employee.getName());
-        assertEquals(employee.getBirthDate(), EMPLOYEE_BIRTH_DATE);
-        assertEquals(employee.getGraduationDate(), EMPLOYEE_GRADUATION_DATE);
+        assertEquals(EMPLOYEE_BIRTH_DATE, employee.getBirthDate());
+        assertEquals(EMPLOYEE_GRADUATION_DATE, employee.getGraduationDate());
         assertEquals(MALE_EMPLOYEE, employee.getGender());
-        assertEquals(employee.getGrossSalary(), EMPLOYEE_GROSS_SALARY);
+        assertEquals(EMPLOYEE_GROSS_SALARY, employee.getGrossSalary());
         assertEquals(EXIST_MANAGER_ID, employee.getManager().getId());
         assertEquals(EXIST_DEPARTMENT2_ID, employee.getDepartment().getId());
         assertEquals(EXIST_TEAM2_ID, employee.getTeam().getId());
@@ -550,8 +554,8 @@ public class EmployeeControllerTest {
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
         assertEquals(EXIST_EMPLOYEE2_ID, updatedEmployee.getId());
-        assertEquals(updatedEmployee.getBirthDate(), UPDATE_BIRTH_DATE);
-        assertEquals(updatedEmployee.getGraduationDate(), UPDATE_GRADUATION_DATE);
+        assertEquals(UPDATE_BIRTH_DATE, updatedEmployee.getBirthDate());
+        assertEquals(UPDATE_GRADUATION_DATE, updatedEmployee.getGraduationDate());
     }
 
     @Test
@@ -686,6 +690,62 @@ public class EmployeeControllerTest {
         assertEquals(EXIST_EMPLOYEE2_ID, updatedEmployee.getId());
         assertThat(updatedEmployee.getName()).isNull();
     }
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employee-salary-info.xml")
+    public void testGetEmployeeSalaryInfo_whenEmployeeExistsAndValidGrossSalary_shouldReturnCorrectNetSalary() throws Exception {
+        final BigDecimal grossSalary = BigDecimal.valueOf(15000);
+
+        /* net = grossSalary - (grossSalary*TAX_RATIO) - INSURANCE_AMOUNT
+                = grossSalary(1-TAX_RATIO)-INSURANCE_AMOUNT
+              = grossSalary(TAX_REMAINDER)-INSURANCE_AMOUNT */
+        BigDecimal netSalary = grossSalary.multiply(TAX_REMAINDER).subtract(INSURANCE_AMOUNT);
+
+        MvcResult result = mockMvc.perform(get("/api/employees/" + EXIST_EMPLOYEE2_ID + "/salary"))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        EmployeeSalaryDto employeeSalaryResponse = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), EmployeeSalaryDto.class);
+        assertThat(employeeSalaryResponse.getGrossSalary().compareTo(grossSalary));
+        assertThat(employeeSalaryResponse.getNetSalary().compareTo(netSalary));
+
+    }
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employee-salary-info.xml")
+    public void testGetEmployeeSalary_whenNotFoundEmployee_shouldReturnNotFound() throws Exception {
+        mockMvc.perform(get("/api/employees/" + NO_EXIST_EMPLOYEE_ID + "/salary"))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(EMPLOYEE_NOT_FOUND.getDefaultMessage())));
+
+    }
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employee-negative-salary.xml")
+    public void testGetEmployeeSalary_whenNegativeGrossSalary_shouldReturnIsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/employees/" + EXIST_EMPLOYEE3_ID + "/salary"))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(INVALID_GROSS_SALARY.getDefaultMessage())));
+
+    }
+
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employee-negative-salary.xml")
+    public void testGetEmployeeSalary_whenNegativeNetSalary_shouldReturnIsBadRequest() throws Exception {
+        mockMvc.perform(get("/api/employees/" + EXIST_EMPLOYEE2_ID + "/salary"))
+                .andExpect(status().isBadRequest())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(NEGATIVE_SALARY.getDefaultMessage())));
+
+    }
+
 
     @Test
     @Transactional
