@@ -3,14 +3,12 @@ package com.example.hrm_system.controller;
 import com.example.hrm_system.dto.EmployeeResponse;
 import com.example.hrm_system.service.TeamService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
+import java.util.List;
 
 @RestController
 @AllArgsConstructor
@@ -20,8 +18,11 @@ public class TeamController {
     private final TeamService teamService;
 
     @GetMapping("/{teamId}/employees")
-    public ResponseEntity<Set<EmployeeResponse>> getAllEmployeesByTeamId(@PathVariable Long teamId) {
-        Set<EmployeeResponse> responses = teamService.getAllEmployeesByTeamId(teamId);
+    public ResponseEntity<List<EmployeeResponse>> getAllEmployeesByTeamId(@PathVariable Long teamId,
+                                                                          @RequestParam(required = false, defaultValue = "0") int pageNo,
+                                                                          @RequestParam(required = false, defaultValue = "5") int pageSize
+    ) {
+        List<EmployeeResponse> responses = teamService.getAllEmployeesByTeamId(teamId, PageRequest.of(pageNo, pageSize));
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
