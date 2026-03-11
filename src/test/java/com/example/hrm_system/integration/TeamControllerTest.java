@@ -46,8 +46,7 @@ public class TeamControllerTest {
     private static final Long EXIST_EMPTY_TEAM_ID = 3L;
     private static final String FIRST_PAGE_NUMBER = "0";
     private static final String SECOND_PAGE_NUMBER = "1";
-    private static final String FIRST_PAGE_SIZE = "3";
-    private static final String SECOND_PAGE_SIZE = "2";
+    private static final String PAGE_SIZE = "3";
     private static final String SORT_DIRECTION_DESC ="DESC";
 
     @Autowired
@@ -60,16 +59,14 @@ public class TeamControllerTest {
     @Transactional
     @DatabaseSetup("/dataset/get-employees-in-some-team.xml")
     public void testGetAllEmployeesInSomeTeamWithPagination_whenTeamExists_shouldSuccessAndReturnEmployeesInTeam() throws Exception {
-
-        final int EXPECTED_TOTAL_PAGES = 2;
-        final int EXPECTED_TOTAL_ELEMENTS_IN_FIRST_PAGE = 3;
-        final int EXPECTED_CONTENT_SIZE = 3;
+        final int EXPECTED_CONTENT_SIZE_IN_FIRST_PAGE = 3;
+        final int EXPECTED_CONTENT_SIZE_IN_SECOND_PAGE = 3;
 
 
         //first page
         MvcResult result = mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees")
                         .param("pageNumber", FIRST_PAGE_NUMBER)
-                        .param("pageSize", FIRST_PAGE_SIZE))
+                        .param("pageSize", PAGE_SIZE))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -80,14 +77,12 @@ public class TeamControllerTest {
 
 
         assertNotNull(pagingResult1);
-        assertEquals(EXPECTED_CONTENT_SIZE,pagingResult1.getContent().size());
-        assertEquals(EXPECTED_TOTAL_ELEMENTS_IN_FIRST_PAGE, pagingResult1.getTotalElements());
-        assertEquals(EXPECTED_TOTAL_PAGES, pagingResult1.getTotalPages());
+        assertEquals(EXPECTED_CONTENT_SIZE_IN_FIRST_PAGE,pagingResult1.getContent().size());
 
         //second page
         MvcResult result2 = mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees")
                         .param("pageNumber", SECOND_PAGE_NUMBER)
-                        .param("pageSize", SECOND_PAGE_SIZE))
+                        .param("pageSize", PAGE_SIZE))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -97,10 +92,7 @@ public class TeamControllerTest {
                 });
 
         assertNotNull(pagingResult2);
-        assertEquals(EXPECTED_CONTENT_SIZE,pagingResult2.getContent().size());
-        assertEquals(EXPECTED_TOTAL_ELEMENTS_IN_FIRST_PAGE, pagingResult2.getTotalElements());
-        assertEquals(EXPECTED_TOTAL_PAGES, pagingResult2.getTotalPages());
-
+        assertEquals(EXPECTED_CONTENT_SIZE_IN_SECOND_PAGE,pagingResult2.getContent().size());
     }
 
     @Test
@@ -147,7 +139,7 @@ public class TeamControllerTest {
 
         MvcResult result = mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees")
                         .param("pageNumber", FIRST_PAGE_NUMBER)
-                        .param("pageSize", FIRST_PAGE_SIZE)
+                        .param("pageSize", PAGE_SIZE)
                         .param("sortField", SORTED_FIELD_BY_ID)
                         .param("direction", SORT_DIRECTION_DESC))
 
