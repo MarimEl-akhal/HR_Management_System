@@ -2,6 +2,7 @@ package com.example.hrm_system.integration;
 
 import com.example.hrm_system.configuration.JacksonConfiguration;
 import com.example.hrm_system.dto.EmployeeResponse;
+import com.example.hrm_system.dto.PagingResult;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
@@ -19,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -54,20 +56,37 @@ public class TeamControllerTest {
     @DatabaseSetup("/dataset/get-employees-in-some-team.xml")
     public void testGetAllEmployeesInSomeTeam_whenTeamExists_shouldSuccessAndReturnEmployeesInTeam() throws Exception {
         final Set<String> EXPECTED_EMPLOYEES_NAMES = Set.of("Zaid", "Salim", "Laila");
+        final int EXPECTED_TOTAL_PAGES = 1;
+        final int EXPECTED_TOTAL_ELEMENTS = 3;
 
-        MvcResult result = mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees"))
+
+        MvcResult result = mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees")
+                        .param("pageNumber", "0")
+                        .param("pageSize", "5"))
                 .andExpect(status().isOk())
                 .andReturn();
-        Set<EmployeeResponse> employeeResponses = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
-        });
+
+        PagingResult<EmployeeResponse> pagingResult = jacksonConfiguration.objectMapper().readValue(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+
+
+        List<EmployeeResponse> employeeResponses = pagingResult.getContent();
+
 
         Set<String> actualEmployeesNames = employeeResponses.stream()
                 .map(EmployeeResponse::getName)
                 .collect(Collectors.toSet());
 
+
+        assertNotNull(pagingResult);
         assertNotNull(employeeResponses);
         assertEquals(EXPECTED_EMPLOYEES_NAMES, actualEmployeesNames);
         assertEquals(EXPECTED_EMPLOYEES_NAMES.size(), actualEmployeesNames.size());
+
+        assertEquals(EXPECTED_TOTAL_ELEMENTS, pagingResult.getTotalElements());
+        assertEquals(EXPECTED_TOTAL_PAGES, pagingResult.getTotalPages());
 
     }
 
@@ -75,14 +94,25 @@ public class TeamControllerTest {
     @Transactional
     @DatabaseSetup("/dataset/get-employees-in-some-team.xml")
     public void testGetAllEmployeesInSomeTeam_whenTeamHasNoEmployees_shouldReturnEmptySet() throws Exception {
-        MvcResult result = mockMvc.perform(get("/api/teams/" + EXIST_EMPTY_TEAM_ID + "/employees"))
+        final int EXPECTED_TOTAL_PAGES = 0;
+        final int EXPECTED_TOTAL_ELEMENTS = 0;
+
+        MvcResult result = mockMvc.perform(get("/api/teams/" + EXIST_EMPTY_TEAM_ID + "/employees")
+                        .param("pageNumber", "0")
+                        .param("pageSize", "5"))
                 .andExpect(status().isOk())
                 .andReturn();
-        Set<EmployeeResponse> employeeResponses = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
-        });
 
-        assertNotNull(employeeResponses);
-        assertTrue(employeeResponses.isEmpty());
+        PagingResult<EmployeeResponse> pagingResult = jacksonConfiguration.objectMapper().readValue(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+
+        assertNotNull(pagingResult);
+        assertTrue(pagingResult.getContent().isEmpty());
+
+        assertEquals(EXPECTED_TOTAL_ELEMENTS, pagingResult.getTotalElements());
+        assertEquals(EXPECTED_TOTAL_PAGES, pagingResult.getTotalPages());
     }
 
     @Test
