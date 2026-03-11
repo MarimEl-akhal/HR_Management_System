@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -43,7 +44,11 @@ public class TeamControllerTest {
     private static final Long NO_EXIST_TEAM_ID = 99L;
     private static final Long EXIST_TEAM1_ID = 1L;
     private static final Long EXIST_EMPTY_TEAM_ID = 3L;
-
+    private static final String FIRST_PAGE_NUMBER = "0";
+    private static final String SECOND_PAGE_NUMBER = "1";
+    private static final String FIRST_PAGE_SIZE = "3";
+    private static final String SECOND_PAGE_SIZE = "2";
+    private static final String SORT_DIRECTION_DESC ="DESC";
 
     @Autowired
     private MockMvc mockMvc;
@@ -54,15 +59,58 @@ public class TeamControllerTest {
     @Test
     @Transactional
     @DatabaseSetup("/dataset/get-employees-in-some-team.xml")
-    public void testGetAllEmployeesInSomeTeam_whenTeamExists_shouldSuccessAndReturnEmployeesInTeam() throws Exception {
-        final Set<String> EXPECTED_EMPLOYEES_NAMES = Set.of("Zaid", "Salim", "Laila");
-        final int EXPECTED_TOTAL_PAGES = 1;
-        final int EXPECTED_TOTAL_ELEMENTS = 3;
+    public void testGetAllEmployeesInSomeTeamWithPagination_whenTeamExists_shouldSuccessAndReturnEmployeesInTeam() throws Exception {
+
+        final int EXPECTED_TOTAL_PAGES = 2;
+        final int EXPECTED_TOTAL_ELEMENTS_IN_FIRST_PAGE = 3;
+        final int EXPECTED_CONTENT_SIZE = 3;
 
 
+        //first page
         MvcResult result = mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees")
-                        .param("pageNumber", "0")
-                        .param("pageSize", "5"))
+                        .param("pageNumber", FIRST_PAGE_NUMBER)
+                        .param("pageSize", FIRST_PAGE_SIZE))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        PagingResult<EmployeeResponse> pagingResult1 = jacksonConfiguration.objectMapper().readValue(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+
+
+        assertNotNull(pagingResult1);
+        assertEquals(EXPECTED_CONTENT_SIZE,pagingResult1.getContent().size());
+        assertEquals(EXPECTED_TOTAL_ELEMENTS_IN_FIRST_PAGE, pagingResult1.getTotalElements());
+        assertEquals(EXPECTED_TOTAL_PAGES, pagingResult1.getTotalPages());
+
+        //second page
+        MvcResult result2 = mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees")
+                        .param("pageNumber", SECOND_PAGE_NUMBER)
+                        .param("pageSize", SECOND_PAGE_SIZE))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        PagingResult<EmployeeResponse> pagingResult2 = jacksonConfiguration.objectMapper().readValue(
+                result2.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+
+        assertNotNull(pagingResult2);
+        assertEquals(EXPECTED_CONTENT_SIZE,pagingResult2.getContent().size());
+        assertEquals(EXPECTED_TOTAL_ELEMENTS_IN_FIRST_PAGE, pagingResult2.getTotalElements());
+        assertEquals(EXPECTED_TOTAL_PAGES, pagingResult2.getTotalPages());
+
+    }
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employees-in-some-team.xml")
+    public void testGetAllEmployeesInSomeTeam_whenTeamExists_shouldSuccessAndReturnEmployeesInTeam() throws Exception {
+        final Set<String> EXPECTED_EMPLOYEES_NAMES = Set.of("Zaid", "Salim", "Laila","Hanan","Umair");
+
+
+        MvcResult result = mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees"))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -85,8 +133,43 @@ public class TeamControllerTest {
         assertEquals(EXPECTED_EMPLOYEES_NAMES, actualEmployeesNames);
         assertEquals(EXPECTED_EMPLOYEES_NAMES.size(), actualEmployeesNames.size());
 
-        assertEquals(EXPECTED_TOTAL_ELEMENTS, pagingResult.getTotalElements());
-        assertEquals(EXPECTED_TOTAL_PAGES, pagingResult.getTotalPages());
+
+    }
+
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employees-in-some-team.xml")
+    public void testGetAllEmployeesInSomeTeamWithSortingById_whenTeamExists_shouldSuccessAndReturnEmployeesInTeam() throws Exception {
+
+        final String SORTED_FIELD_BY_ID = "id";
+
+
+        MvcResult result = mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees")
+                        .param("pageNumber", FIRST_PAGE_NUMBER)
+                        .param("pageSize", FIRST_PAGE_SIZE)
+                        .param("sortField", SORTED_FIELD_BY_ID)
+                        .param("direction", SORT_DIRECTION_DESC))
+
+                .andExpect(status().isOk())
+                .andReturn();
+
+        PagingResult<EmployeeResponse> pagingResult = jacksonConfiguration.objectMapper().readValue(
+                result.getResponse().getContentAsString(),
+                new TypeReference<>() {
+                });
+
+
+        List<Long> descIds  = pagingResult.getContent().stream()
+                .map(EmployeeResponse::getId)
+                .toList();
+
+        List<Long> sortedDesc = descIds.stream().sorted(Comparator.reverseOrder()).toList();
+
+
+        assertNotNull(pagingResult);
+
+        assertEquals(sortedDesc, descIds);
 
     }
 

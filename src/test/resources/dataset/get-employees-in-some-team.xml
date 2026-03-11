@@ -57,5 +57,24 @@
                manager_id="2"
                team_id="2"
     />
+    <employees employee_id="6"
+               name="Hanan"
+               birth_date="2000-11-30"
+               graduation_date="2024-06-15"
+               gender="FEMALE"
+               gross_salary="55000.0"
+               manager_id="2"
+               team_id="1"
+    />
+
+    <employees employee_id="7"
+               name="Umair"
+               birth_date="2000-05-30"
+               graduation_date="2022-06-10"
+               gender="MALE"
+               gross_salary="45000.0"
+               manager_id="2"
+               team_id="1"
+    />
 
 </dataset>
