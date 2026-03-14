@@ -1,9 +1,9 @@
 package com.example.hrm_system.controller;
 
 import com.example.hrm_system.dto.EmployeeResponse;
-import com.example.hrm_system.dto.PagingResult;
 import com.example.hrm_system.service.TeamService;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -18,7 +18,7 @@ public class TeamController {
     private final TeamService teamService;
 
     @GetMapping("/{teamId}/employees")
-    public ResponseEntity<PagingResult<EmployeeResponse>> getAllEmployeesByTeamId(
+    public ResponseEntity<Page<EmployeeResponse>> getAllEmployeesByTeamId(
             @PathVariable Long teamId,
             @RequestParam(required = false, defaultValue = "0") int pageNo,
             @RequestParam(required = false, defaultValue = "5") int pageSize,
@@ -26,7 +26,7 @@ public class TeamController {
             @RequestParam(required = false, defaultValue = "ASC") Sort.Direction direction
     ) {
 
-        PagingResult<EmployeeResponse> responses =
+        Page<EmployeeResponse> responses =
                 teamService.getAllEmployeesByTeamId(teamId, PageRequest.of(pageNo, pageSize, Sort.by(direction, sortField)));
 
         return ResponseEntity.status(HttpStatus.OK).body(responses);

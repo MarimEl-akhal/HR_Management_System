@@ -1,9 +1,7 @@
 package com.example.hrm_system.integration;
 
-import com.example.hrm_system.configuration.JacksonConfiguration;
-import com.example.hrm_system.dto.EmployeeResponse;
-import com.example.hrm_system.dto.PagingResult;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.example.hrm_system.entity.Employee;
+import com.example.hrm_system.repository.EmployeeRepository;
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.github.springtestdbunit.annotation.DbUnitConfiguration;
@@ -11,13 +9,15 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestExecutionListeners;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.support.DependencyInjectionTestExecutionListener;
 import org.springframework.test.context.transaction.TransactionalTestExecutionListener;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
@@ -47,12 +47,13 @@ public class TeamControllerTest {
     private static final String FIRST_PAGE_NUMBER = "0";
     private static final String SECOND_PAGE_NUMBER = "1";
     private static final String PAGE_SIZE = "3";
-    private static final String SORT_DIRECTION_DESC ="DESC";
+    private static final String SORT_DIRECTION_DESC = "DESC";
 
     @Autowired
     private MockMvc mockMvc;
+
     @Autowired
-    private JacksonConfiguration jacksonConfiguration;
+    private EmployeeRepository employeeRepository;
 
 
     @Test
@@ -60,63 +61,58 @@ public class TeamControllerTest {
     @DatabaseSetup("/dataset/get-employees-in-some-team.xml")
     public void testGetAllEmployeesInSomeTeamWithPagination_whenTeamExists_shouldSuccessAndReturnEmployeesInTeam() throws Exception {
         final int EXPECTED_CONTENT_SIZE_IN_FIRST_PAGE = 3;
-        final int EXPECTED_CONTENT_SIZE_IN_SECOND_PAGE = 3;
+        final int EXPECTED_CONTENT_SIZE_IN_SECOND_PAGE = 2;
 
 
         //first page
-        MvcResult result = mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees")
+        mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees")
                         .param("pageNumber", FIRST_PAGE_NUMBER)
                         .param("pageSize", PAGE_SIZE))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        PagingResult<EmployeeResponse> pagingResult1 = jacksonConfiguration.objectMapper().readValue(
-                result.getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+        Page<Employee> pagingResult1 = employeeRepository.findAllEmployeesByTeamId(EXIST_TEAM1_ID,PageRequest.of(0,Integer.parseInt(PAGE_SIZE)));
 
 
         assertNotNull(pagingResult1);
-        assertEquals(EXPECTED_CONTENT_SIZE_IN_FIRST_PAGE,pagingResult1.getContent().size());
+        assertEquals(EXPECTED_CONTENT_SIZE_IN_FIRST_PAGE, pagingResult1.getContent().size());
 
         //second page
-        MvcResult result2 = mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees")
+        mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees")
                         .param("pageNumber", SECOND_PAGE_NUMBER)
                         .param("pageSize", PAGE_SIZE))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        PagingResult<EmployeeResponse> pagingResult2 = jacksonConfiguration.objectMapper().readValue(
-                result2.getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+        Page<Employee> pagingResult2 = employeeRepository.findAllEmployeesByTeamId(EXIST_TEAM1_ID,PageRequest.of(Integer.parseInt(SECOND_PAGE_NUMBER),Integer.parseInt(PAGE_SIZE)));
+
 
         assertNotNull(pagingResult2);
-        assertEquals(EXPECTED_CONTENT_SIZE_IN_SECOND_PAGE,pagingResult2.getContent().size());
+        assertEquals(EXPECTED_CONTENT_SIZE_IN_SECOND_PAGE, pagingResult2.getContent().size());
     }
 
     @Test
     @Transactional
     @DatabaseSetup("/dataset/get-employees-in-some-team.xml")
     public void testGetAllEmployeesInSomeTeam_whenTeamExists_shouldSuccessAndReturnEmployeesInTeam() throws Exception {
-        final Set<String> EXPECTED_EMPLOYEES_NAMES = Set.of("Zaid", "Salim", "Laila","Hanan","Umair");
+        final Set<String> EXPECTED_EMPLOYEES_NAMES = Set.of("Zaid", "Salim", "Laila", "Hanan", "Umair");
+        final  int DEFAULT_PAGE_NUMBER =  0, DEFAULT_PAGE_SIZE = 5;
 
 
-        MvcResult result = mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees"))
+        mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees"))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        PagingResult<EmployeeResponse> pagingResult = jacksonConfiguration.objectMapper().readValue(
-                result.getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+
+        Page<Employee> pagingResult = employeeRepository.findAllEmployeesByTeamId(EXIST_TEAM1_ID,PageRequest.of(DEFAULT_PAGE_NUMBER,DEFAULT_PAGE_SIZE));
 
 
-        List<EmployeeResponse> employeeResponses = pagingResult.getContent();
+
+        List<Employee> employeeResponses = pagingResult.getContent();
 
 
         Set<String> actualEmployeesNames = employeeResponses.stream()
-                .map(EmployeeResponse::getName)
+                .map(Employee::getName)
                 .collect(Collectors.toSet());
 
 
@@ -137,7 +133,7 @@ public class TeamControllerTest {
         final String SORTED_FIELD_BY_ID = "id";
 
 
-        MvcResult result = mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees")
+        mockMvc.perform(get("/api/teams/" + EXIST_TEAM1_ID + "/employees")
                         .param("pageNumber", FIRST_PAGE_NUMBER)
                         .param("pageSize", PAGE_SIZE)
                         .param("sortField", SORTED_FIELD_BY_ID)
@@ -146,14 +142,12 @@ public class TeamControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        PagingResult<EmployeeResponse> pagingResult = jacksonConfiguration.objectMapper().readValue(
-                result.getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+
+        Page<Employee> pagingResult = employeeRepository.findAllEmployeesByTeamId(EXIST_TEAM1_ID, PageRequest.of(0, Integer.parseInt(PAGE_SIZE), Sort.by(Sort.Direction.DESC, SORTED_FIELD_BY_ID)));
 
 
-        List<Long> descIds  = pagingResult.getContent().stream()
-                .map(EmployeeResponse::getId)
+        List<Long> descIds = pagingResult.getContent().stream()
+                .map(Employee::getId)
                 .toList();
 
         List<Long> sortedDesc = descIds.stream().sorted(Comparator.reverseOrder()).toList();
@@ -172,16 +166,14 @@ public class TeamControllerTest {
         final int EXPECTED_TOTAL_PAGES = 0;
         final int EXPECTED_TOTAL_ELEMENTS = 0;
 
-        MvcResult result = mockMvc.perform(get("/api/teams/" + EXIST_EMPTY_TEAM_ID + "/employees")
-                        .param("pageNumber", "0")
-                        .param("pageSize", "5"))
+
+        mockMvc.perform(get("/api/teams/" + EXIST_EMPTY_TEAM_ID + "/employees")
+                        .param("pageNumber", FIRST_PAGE_NUMBER)
+                        .param("pageSize", PAGE_SIZE))
                 .andExpect(status().isOk())
                 .andReturn();
 
-        PagingResult<EmployeeResponse> pagingResult = jacksonConfiguration.objectMapper().readValue(
-                result.getResponse().getContentAsString(),
-                new TypeReference<>() {
-                });
+        Page<Employee> pagingResult = employeeRepository.findAllEmployeesByTeamId(EXIST_EMPTY_TEAM_ID, PageRequest.of(0, Integer.parseInt(PAGE_SIZE)));
 
         assertNotNull(pagingResult);
         assertTrue(pagingResult.getContent().isEmpty());
