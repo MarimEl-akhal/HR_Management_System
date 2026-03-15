@@ -55,7 +55,7 @@ public class EmployeeController {
     public ResponseEntity<Page<EmployeeResponse>> getEmployeesUnderSpecificManager(@PathVariable Long managerId,
                                                                                    @RequestParam(required = false, defaultValue = "0") int pageNo,
                                                                                    @RequestParam(required = false, defaultValue = "5") int pageSize,
-                                                                                   @RequestParam(required = false, defaultValue = "id") String sortField,
+                                                                                   @RequestParam(required = false, defaultValue = "employee_id") String sortField,
                                                                                    @RequestParam(required = false, defaultValue = "ASC") Sort.Direction direction) {
         Page<EmployeeResponse> responses =
                 employeeService.getAllEmployeesUnderSpecificManger(managerId, PageRequest.of(pageNo, pageSize, Sort.by(direction, sortField)));
