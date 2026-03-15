@@ -12,8 +12,6 @@ on: # Trigger events
   push:  
     branches: 
         - '**' # any branch
-    paths:
-       - "src/**"  # all file in this pass trigger pipeline
   pull_request:
      types: 
        - opened
