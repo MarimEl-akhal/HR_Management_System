@@ -11,7 +11,6 @@ import com.example.hrm_system.enums.Gender;
 import com.example.hrm_system.exception.ApiException;
 import com.example.hrm_system.repository.EmployeeRepository;
 import com.example.hrm_system.repository.ExpertiseRepository;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.github.springtestdbunit.DbUnitTestExecutionListener;
 import com.github.springtestdbunit.annotation.DatabaseSetup;
 import com.github.springtestdbunit.annotation.DbUnitConfiguration;
@@ -20,6 +19,9 @@ import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestExecutionListeners;
@@ -32,7 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -73,6 +76,12 @@ public class EmployeeControllerTest {
     private static final BigDecimal TAX_RATIO = BigDecimal.valueOf(0.15);
     private static final BigDecimal TAX_REMAINDER = BigDecimal.ONE.subtract(TAX_RATIO);
     private static final BigDecimal INSURANCE_AMOUNT = BigDecimal.valueOf(500);
+
+   private static final int DEFAULT_PAGE_NUMBER =  0, DEFAULT_PAGE_SIZE = 5;
+    private static final String FIRST_PAGE_NUMBER = "0";
+    private static final String SECOND_PAGE_NUMBER = "1";
+    private static final String PAGE_SIZE = "3";
+    private static final String SORT_DIRECTION_DESC = "DESC";
 
     @Autowired
     private MockMvc mockMvc;
@@ -752,25 +761,21 @@ public class EmployeeControllerTest {
     @DatabaseSetup("/dataset/get-direct-employees-under-some-manager.xml")
     public void testGetDirectEmployeesUnderManager_whenManagerExists_shouldSuccessAndReturnHisSubordinates() throws Exception{
 
-        final Set<String> EXPECTED_EMPLOYEES_NAME = Set.of("Salim", "Malak");
+        final Set<String> EXPECTED_EMPLOYEES_NAMES = Set.of("Salim", "Malak");
 
-        MvcResult result = mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID + "/subordinates"))
+
+
+       mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID + "/subordinates"))
                 .andExpect(status().isOk())
                 .andReturn();
-        Set<EmployeeResponse> employeeResponses = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
-        });
-
-        Set<Employee> employees = new HashSet<>(employeeRepository.findAllDirectEmployeesByManagerId(EXIST_MANAGER_ID));
+        Page<Employee> employees = employeeRepository.findByManagerId(EXIST_MANAGER_ID,PageRequest.of(DEFAULT_PAGE_NUMBER,DEFAULT_PAGE_SIZE));
 
 
-        //from response
-        assertNotNull(employeeResponses);
-        assertEquals(EXPECTED_EMPLOYEES_NAME, employeeResponses.stream().map(EmployeeResponse::getName).collect(Collectors.toSet()));
-        assertEquals(EXPECTED_EMPLOYEES_NAME.size(), employeeResponses.stream().map(EmployeeResponse::getName).collect(Collectors.toSet()).size());
+        Set<String> actualEmployeesNames = employees.stream().map(Employee::getName).collect(Collectors.toSet());
 
-        //from db
-        assertEquals(EXPECTED_EMPLOYEES_NAME, employees.stream().map(Employee::getName).collect(Collectors.toSet()));
-        assertEquals(EXPECTED_EMPLOYEES_NAME.size(), employees.stream().map(Employee::getName).collect(Collectors.toSet()).size());
+        assertNotNull(employees);
+        assertEquals(EXPECTED_EMPLOYEES_NAMES, actualEmployeesNames);
+        assertEquals(EXPECTED_EMPLOYEES_NAMES.size(), actualEmployeesNames.size());
 
     }
 
@@ -779,23 +784,88 @@ public class EmployeeControllerTest {
     @Transactional
     @DatabaseSetup("/dataset/get-direct-employees-under-some-manager.xml")
     public void  testGetDirectEmployeesUnderManager_whenEmployeeExistsAndHasNoSubordinates_shouldSuccessAndReturnEmptySet() throws Exception {
-        MvcResult result = mockMvc.perform(get("/api/employees/" + EXIST_EMPLOYEE3_ID + "/subordinates"))
+         mockMvc.perform(get("/api/employees/" + EXIST_EMPLOYEE3_ID + "/subordinates"))
                 .andExpect(status().isOk())
                 .andReturn();
-        Set<EmployeeResponse> employeeResponses = jacksonConfiguration.objectMapper().readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
-        });
+        Page<Employee> employees = employeeRepository.findByManagerId(EXIST_EMPLOYEE3_ID,PageRequest.of(DEFAULT_PAGE_NUMBER,DEFAULT_PAGE_SIZE));
 
-        Set<Employee> employees = new HashSet<>(employeeRepository.findAllDirectEmployeesByManagerId(EXIST_EMPLOYEE3_ID));
+        assertNotNull(employees);
+        assertTrue(employees.getContent().isEmpty());
 
-
-        //from response
-        assertNotNull(employeeResponses);
-        assertTrue(employeeResponses.isEmpty());
-
-        //from db
-        assertTrue(employees.isEmpty());
 
     }
+
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-direct-employees-under-some-manager.xml")
+    public void testGetDirectEmployeesUnderManagerWithSortingById_whenManagerExists_shouldSuccessAndReturnEmployeesUnderManager() throws Exception {
+
+        final String SORTED_FIELD_BY_ID = "id";
+
+
+        mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID + "/subordinates")
+                        .param("pageNumber", FIRST_PAGE_NUMBER)
+                        .param("pageSize", PAGE_SIZE)
+                        .param("sortField", SORTED_FIELD_BY_ID)
+                        .param("direction", SORT_DIRECTION_DESC))
+
+                .andExpect(status().isOk())
+                .andReturn();
+
+
+        Page<Employee> pagingResult = employeeRepository.findByManagerId(EXIST_MANAGER_ID, PageRequest.of(0, Integer.parseInt(PAGE_SIZE), Sort.by(Sort.Direction.DESC, SORTED_FIELD_BY_ID)));
+
+
+        List<Long> descIds = pagingResult.getContent().stream()
+                .map(Employee::getId)
+                .toList();
+
+        List<Long> sortedDesc = descIds.stream().sorted(Comparator.reverseOrder()).toList();
+
+
+        assertNotNull(pagingResult);
+
+        assertEquals(sortedDesc, descIds);
+
+    }
+
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-direct-employees-under-some-manager.xml")
+    public void  testGetDirectEmployeesUnderManagerWithPagination_whenManagerExists_shouldSuccessAndReturnEmployeesUnderManager() throws Exception {
+        final int EXPECTED_CONTENT_SIZE_IN_FIRST_PAGE = 2;
+        final int EXPECTED_CONTENT_SIZE_IN_SECOND_PAGE = 0;
+
+
+        //first page
+        mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID + "/subordinates")
+                        .param("pageNumber", FIRST_PAGE_NUMBER)
+                        .param("pageSize", PAGE_SIZE))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Page<Employee> pagingResult1 = employeeRepository.findByManagerId(EXIST_MANAGER_ID,PageRequest.of(0,Integer.parseInt(PAGE_SIZE)));
+
+
+        assertNotNull(pagingResult1);
+        assertEquals(EXPECTED_CONTENT_SIZE_IN_FIRST_PAGE, pagingResult1.getContent().size());
+
+        //second page
+        mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID + "/subordinates")
+                        .param("pageNumber", SECOND_PAGE_NUMBER)
+                        .param("pageSize", PAGE_SIZE))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Page<Employee> pagingResult2 = employeeRepository.findByManagerId(EXIST_MANAGER_ID,PageRequest.of(Integer.parseInt(SECOND_PAGE_NUMBER),Integer.parseInt(PAGE_SIZE)));
+
+
+        assertNotNull(pagingResult2);
+        assertEquals(EXPECTED_CONTENT_SIZE_IN_SECOND_PAGE, pagingResult2.getContent().size());
+    }
+
 
     @Test
     @Transactional
@@ -808,4 +878,6 @@ public class EmployeeControllerTest {
     }
 
 
-    }
+
+
+}
