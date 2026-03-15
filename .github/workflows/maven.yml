@@ -52,7 +52,8 @@ jobs:
       uses: actions/upload-artifact@v7.0.0
       with:
         name: test-report
-        path: target/reports/surefire.html
+        path: target/reports/surefire.html 
+        
       
 
     # Optional: Uploads the full dependency graph to GitHub to improve the quality of Dependabot alerts this repository can receive
