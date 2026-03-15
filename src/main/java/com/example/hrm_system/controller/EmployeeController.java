@@ -7,11 +7,12 @@ import com.example.hrm_system.dto.UpdateEmployeeRequest;
 import com.example.hrm_system.service.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.*;
 
 @RestController
 @AllArgsConstructor
@@ -50,9 +51,14 @@ public class EmployeeController {
         return ResponseEntity.status(HttpStatus.OK).body(employeeSalaryResponse);
     }
 
-    @GetMapping("/{managerId}/subordinates")
-    public ResponseEntity<Set<EmployeeResponse>> getEmployeesUnderSpecificManager(@PathVariable Long managerId){
-        Set<EmployeeResponse> responses = employeeService.getAllEmployeesUnderSpecificManger(managerId);
+    @GetMapping("/{managerId}/hierarchy")
+    public ResponseEntity<Page<EmployeeResponse>> getEmployeesUnderSpecificManager(@PathVariable Long managerId,
+                                                                                   @RequestParam(required = false, defaultValue = "0") int pageNo,
+                                                                                   @RequestParam(required = false, defaultValue = "5") int pageSize,
+                                                                                   @RequestParam(required = false, defaultValue = "id") String sortField,
+                                                                                   @RequestParam(required = false, defaultValue = "ASC") Sort.Direction direction) {
+        Page<EmployeeResponse> responses =
+                employeeService.getAllEmployeesUnderSpecificManger(managerId, PageRequest.of(pageNo, pageSize, Sort.by(direction, sortField)));
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
