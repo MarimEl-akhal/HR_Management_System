@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
-    @EntityGraph(attributePaths = {"expertises","department","team"})
+    @EntityGraph(attributePaths = {"expertises", "department", "team"})
     Page<Employee> findByManagerId(Long managerID, Pageable pageable);
 }
 

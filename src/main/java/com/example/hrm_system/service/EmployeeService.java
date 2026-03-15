@@ -240,11 +240,11 @@ public class EmployeeService {
 
     }
 
-    public Page<EmployeeResponse> getDirectEmployeesUnderManger(Long managerId , Pageable pageable) {
+    public Page<EmployeeResponse> getDirectEmployeesUnderManger(Long managerId, Pageable pageable) {
         employeeRepository.findById(managerId)
                 .orElseThrow(() -> new ApiException(MANAGER_NOT_FOUND,
                         MANAGER_NOT_FOUND.getDefaultMessage() + managerId));
-        Page<Employee> employees = employeeRepository.findByManagerId(managerId,pageable);
+        Page<Employee> employees = employeeRepository.findByManagerId(managerId, pageable);
         return employees.map(EmployeeMapper::toResponse);
     }
 }
