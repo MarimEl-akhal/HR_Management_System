@@ -21,7 +21,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -241,12 +240,13 @@ public class EmployeeService {
 
     }
 
-    public List<EmployeeResponse> getDirectEmployeesUnderManger(Long managerId, Pageable pageable) {
+
+    public Page<EmployeeResponse> getDirectEmployeesUnderManger(Long managerId, Pageable pageable) {
         employeeRepository.findById(managerId)
                 .orElseThrow(() -> new ApiException(MANAGER_NOT_FOUND,
                         MANAGER_NOT_FOUND.getDefaultMessage() + managerId));
         Page<Employee> employees = employeeRepository.findByManagerId(managerId, pageable);
-        return employees.getContent().stream().map(EmployeeMapper::toResponse).toList();
+        return employees.map(EmployeeMapper::toResponse);
     }
 }
 

@@ -14,8 +14,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/employees")
@@ -54,12 +52,12 @@ public class EmployeeController {
     }
 
     @GetMapping("/{managerId}/subordinates")
-    public ResponseEntity<List<EmployeeResponse>> getDirectEmployeesUnderManager(@PathVariable Long managerId,
+    public ResponseEntity<Page<EmployeeResponse>> getDirectEmployeesUnderManager(@PathVariable Long managerId,
                                                                                  @RequestParam(required = false, defaultValue = "0") int pageNo,
                                                                                  @RequestParam(required = false, defaultValue = "5") int pageSize,
                                                                                  @RequestParam(required = false, defaultValue = "id") String sortField,
                                                                                  @RequestParam(required = false, defaultValue = "ASC") Sort.Direction direction) {
-        List<EmployeeResponse> responses = employeeService.getDirectEmployeesUnderManger(managerId, PageRequest.of(pageNo, pageSize, Sort.by(direction, sortField)));
+        Page<EmployeeResponse> responses = employeeService.getDirectEmployeesUnderManger(managerId, PageRequest.of(pageNo, pageSize, Sort.by(direction, sortField)));
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
