@@ -12,9 +12,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
-    @EntityGraph(attributePaths = {"expertises", "department", "team"})
-    Page<Employee> findByManagerId(Long managerID, Pageable pageable);
-
 
     @Query(nativeQuery = true,
             value = """
@@ -57,4 +54,13 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
                     """
     )
     Page<Employee> findAllByManagerId(@Param("managerId") Long managerID, Pageable pageable);
+
+
+    @EntityGraph(attributePaths = {"expertises", "department", "team"})
+    Page<Employee> findByManagerId(Long managerID, Pageable pageable);
+
+
+    @EntityGraph(attributePaths = {"expertises", "team", "department"})
+    Page<Employee> findAllEmployeesByTeamId(Long teamId, Pageable pageable);
 }
+

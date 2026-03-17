@@ -493,6 +493,7 @@ public class EmployeeControllerTest {
         Employee updatedEmployee = employeeRepository.findById(EXIST_EMPLOYEE3_ID).orElseThrow(() -> new ApiException(EMPLOYEE_NOT_FOUND,
                 EMPLOYEE_NOT_FOUND.getDefaultMessage() + EXIST_EMPLOYEE3_ID));
 
+        Set<String> actualExpertisesNames = updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet());
 
         assertNotNull(updatedEmployee);
         assertNotNull(updatedEmployee.getId());
@@ -506,8 +507,8 @@ public class EmployeeControllerTest {
         assertEquals(EXIST_MANAGER_ID, updatedEmployee.getManager().getId());
         assertEquals(EXIST_TEAM1_ID, updatedEmployee.getTeam().getId());
         assertEquals(EXIST_DEPARTMENT2_ID, updatedEmployee.getDepartment().getId());
-        assertEquals(UPDATE_EXPERTISES, updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()));
-        assertTrue(updatedEmployee.getExpertises().stream().map(Expertise::getName).collect(Collectors.toSet()).contains("Java"));
+        assertEquals(UPDATE_EXPERTISES, actualExpertisesNames);
+        assertTrue(actualExpertisesNames.contains("Java"));
     }
 
     @Test
@@ -873,7 +874,6 @@ public class EmployeeControllerTest {
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(MANAGER_NOT_FOUND.getDefaultMessage() + NO_EXIST_MANAGER_ID)));
     }
-
 
 
     @Test
