@@ -62,5 +62,15 @@ public class EmployeeController {
         return ResponseEntity.status(HttpStatus.OK).body(responses);
     }
 
+    @GetMapping("/{managerId}/subordinates")
+    public ResponseEntity<Page<EmployeeResponse>> getDirectEmployeesUnderManager(@PathVariable Long managerId,
+                                                                                 @RequestParam(required = false, defaultValue = "0") int pageNo,
+                                                                                 @RequestParam(required = false, defaultValue = "5") int pageSize,
+                                                                                 @RequestParam(required = false, defaultValue = "id") String sortField,
+                                                                                 @RequestParam(required = false, defaultValue = "ASC") Sort.Direction direction) {
+        Page<EmployeeResponse> responses = employeeService.getDirectEmployeesUnderManger(managerId, PageRequest.of(pageNo, pageSize, Sort.by(direction, sortField)));
+        return ResponseEntity.status(HttpStatus.OK).body(responses);
+    }
+
 
 }

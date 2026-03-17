@@ -766,7 +766,7 @@ public class EmployeeControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Page<Employee> employees = employeeRepository.findByManagerId(EXIST_MANAGER_ID, PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE));
+        Page<Employee> employees = employeeRepository.findAllByManagerId(EXIST_MANAGER_ID, PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE));
 
         Set<String> actualEmployeesNames = employees.stream().map(Employee::getName).collect(Collectors.toSet());
 
@@ -785,7 +785,7 @@ public class EmployeeControllerTest {
         mockMvc.perform(get("/api/employees/" + EXIST_EMPLOYEE4_ID + "/hierarchy"))
                 .andExpect(status().isOk())
                 .andReturn();
-        Page<Employee> employees = employeeRepository.findByManagerId(EXIST_EMPLOYEE4_ID, PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE));
+        Page<Employee> employees = employeeRepository.findAllByManagerId(EXIST_EMPLOYEE4_ID, PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE));
 
         //from response
         assertNotNull(employees);
@@ -812,7 +812,7 @@ public class EmployeeControllerTest {
                 .andReturn();
 
 
-        Page<Employee> pagingResult = employeeRepository.findByManagerId(EXIST_MANAGER_ID, PageRequest.of(0, Integer.parseInt(PAGE_SIZE), Sort.by(Sort.Direction.DESC, SORTED_FIELD_BY_ID)));
+        Page<Employee> pagingResult = employeeRepository.findAllByManagerId(EXIST_MANAGER_ID, PageRequest.of(0, Integer.parseInt(PAGE_SIZE), Sort.by(Sort.Direction.DESC, SORTED_FIELD_BY_ID)));
 
 
         List<Long> descIds = pagingResult.getContent().stream()
@@ -843,7 +843,7 @@ public class EmployeeControllerTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Page<Employee> pagingResult1 = employeeRepository.findByManagerId(EXIST_MANAGER_ID, PageRequest.of(0, Integer.parseInt(PAGE_SIZE)));
+        Page<Employee> pagingResult1 = employeeRepository.findAllByManagerId(EXIST_MANAGER_ID, PageRequest.of(0, Integer.parseInt(PAGE_SIZE)));
 
 
         assertNotNull(pagingResult1);
@@ -851,6 +851,128 @@ public class EmployeeControllerTest {
 
         //second page
         mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID + "/hierarchy")
+                        .param("pageNumber", SECOND_PAGE_NUMBER)
+                        .param("pageSize", PAGE_SIZE))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Page<Employee> pagingResult2 = employeeRepository.findAllByManagerId(EXIST_MANAGER_ID, PageRequest.of(Integer.parseInt(SECOND_PAGE_NUMBER), Integer.parseInt(PAGE_SIZE)));
+
+
+        assertNotNull(pagingResult2);
+        assertEquals(EXPECTED_CONTENT_SIZE_IN_SECOND_PAGE, pagingResult2.getContent().size());
+    }
+
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-employees-under-specific-manager.xml")
+    public void testGetAllEmployeesUnderSpecificManager_whenNotFoundManger_shouldFailAndReturnNotFound() throws Exception {
+        mockMvc.perform(get("/api/employees/" + NO_EXIST_MANAGER_ID + "/hierarchy"))
+                .andExpect(status().isNotFound())
+                .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
+                        .contains(MANAGER_NOT_FOUND.getDefaultMessage() + NO_EXIST_MANAGER_ID)));
+    }
+
+
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-direct-employees-under-some-manager.xml")
+    public void testGetDirectEmployeesUnderManager_whenManagerExists_shouldSuccessAndReturnHisSubordinates() throws Exception {
+
+        final Set<String> EXPECTED_EMPLOYEES_NAMES = Set.of("Salim", "Malak");
+
+
+        mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID + "/subordinates"))
+                .andExpect(status().isOk())
+                .andReturn();
+        Page<Employee> employees = employeeRepository.findByManagerId(EXIST_MANAGER_ID, PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE));
+
+
+        Set<String> actualEmployeesNames = employees.stream().map(Employee::getName).collect(Collectors.toSet());
+
+        assertNotNull(employees);
+        assertEquals(EXPECTED_EMPLOYEES_NAMES, actualEmployeesNames);
+        assertEquals(EXPECTED_EMPLOYEES_NAMES.size(), actualEmployeesNames.size());
+
+    }
+
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-direct-employees-under-some-manager.xml")
+    public void testGetDirectEmployeesUnderManager_whenEmployeeExistsAndHasNoSubordinates_shouldSuccessAndReturnEmptySet() throws Exception {
+        mockMvc.perform(get("/api/employees/" + EXIST_EMPLOYEE3_ID + "/subordinates"))
+                .andExpect(status().isOk())
+                .andReturn();
+        Page<Employee> employees = employeeRepository.findByManagerId(EXIST_EMPLOYEE3_ID, PageRequest.of(DEFAULT_PAGE_NUMBER, DEFAULT_PAGE_SIZE));
+
+        assertNotNull(employees);
+        assertTrue(employees.getContent().isEmpty());
+
+
+    }
+
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-direct-employees-under-some-manager.xml")
+    public void testGetDirectEmployeesUnderManagerWithSortingById_whenManagerExists_shouldSuccessAndReturnEmployeesUnderManager() throws Exception {
+
+        final String SORTED_FIELD_BY_ID = "id";
+
+
+        mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID + "/subordinates")
+                        .param("pageNumber", FIRST_PAGE_NUMBER)
+                        .param("pageSize", PAGE_SIZE)
+                        .param("sortField", SORTED_FIELD_BY_ID)
+                        .param("direction", SORT_DIRECTION_DESC))
+
+                .andExpect(status().isOk())
+                .andReturn();
+
+
+        Page<Employee> pagingResult = employeeRepository.findByManagerId(EXIST_MANAGER_ID, PageRequest.of(0, Integer.parseInt(PAGE_SIZE), Sort.by(Sort.Direction.DESC, SORTED_FIELD_BY_ID)));
+
+
+        List<Long> descIds = pagingResult.getContent().stream()
+                .map(Employee::getId)
+                .toList();
+
+        List<Long> sortedDesc = descIds.stream().sorted(Comparator.reverseOrder()).toList();
+
+
+        assertNotNull(pagingResult);
+
+        assertEquals(sortedDesc, descIds);
+
+    }
+
+
+    @Test
+    @Transactional
+    @DatabaseSetup("/dataset/get-direct-employees-under-some-manager.xml")
+    public void testGetDirectEmployeesUnderManagerWithPagination_whenManagerExists_shouldSuccessAndReturnEmployeesUnderManager() throws Exception {
+        final int EXPECTED_CONTENT_SIZE_IN_FIRST_PAGE = 2;
+        final int EXPECTED_CONTENT_SIZE_IN_SECOND_PAGE = 0;
+
+
+        //first page
+        mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID + "/subordinates")
+                        .param("pageNumber", FIRST_PAGE_NUMBER)
+                        .param("pageSize", PAGE_SIZE))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        Page<Employee> pagingResult1 = employeeRepository.findByManagerId(EXIST_MANAGER_ID, PageRequest.of(0, Integer.parseInt(PAGE_SIZE)));
+
+
+        assertNotNull(pagingResult1);
+        assertEquals(EXPECTED_CONTENT_SIZE_IN_FIRST_PAGE, pagingResult1.getContent().size());
+
+        //second page
+        mockMvc.perform(get("/api/employees/" + EXIST_MANAGER_ID + "/subordinates")
                         .param("pageNumber", SECOND_PAGE_NUMBER)
                         .param("pageSize", PAGE_SIZE))
                 .andExpect(status().isOk())
@@ -866,9 +988,9 @@ public class EmployeeControllerTest {
 
     @Test
     @Transactional
-    @DatabaseSetup("/dataset/get-employees-under-specific-manager.xml")
-    public void testGetAllEmployeesUnderSpecificManager_whenNotFoundManger_shouldFailAndReturnNotFound() throws Exception {
-        mockMvc.perform(get("/api/employees/" + NO_EXIST_MANAGER_ID + "/hierarchy"))
+    @DatabaseSetup("/dataset/get-direct-employees-under-some-manager.xml")
+    public void testGetDirectEmployeesUnderManager_whenNotFoundManager_shouldFailAndReturnNotFound() throws Exception {
+        mockMvc.perform(get("/api/employees/" + NO_EXIST_MANAGER_ID + "/subordinates"))
                 .andExpect(status().isNotFound())
                 .andExpect(result -> assertTrue(result.getResponse().getContentAsString()
                         .contains(MANAGER_NOT_FOUND.getDefaultMessage() + NO_EXIST_MANAGER_ID)));
